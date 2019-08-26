@@ -1,0 +1,8 @@
+{
+    "client_workspace": "my-client-workspace",
+    "aws_region": "some-region",
+    "aws_access_key": "SomeThingLikeThis",
+    "aws_secret_key": "VerySecretKeyWhichIamN0tGonnaWrite",
+    "aws_s3_bucket_name": "the.bucket.name.written.backwards",
+    "terraform_token": "theLongTerrafromTokenThatyouGetFromTerraformCloudIThinkItIsFrom-app.terraform.io"
+}
