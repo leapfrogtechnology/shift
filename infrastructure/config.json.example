@@ -1,5 +1,5 @@
 {
-    "client_workspace": "my-client-workspace",
+    "client_name": "my-client-workspace",
     "aws_region": "some-region",
     "aws_access_key": "SomeThingLikeThis",
     "aws_secret_key": "VerySecretKeyWhichIamN0tGonnaWrite",

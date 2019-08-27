@@ -12,7 +12,7 @@ import (
 )
 
 type s3WebsiteVariables struct {
-	CLIENT_WORKSPACE   string `json:"client_workspace"`
+	CLIENT_NAME   string `json:"client_name"`
 	AWS_REGION         string `json:"aws_region"`
 	AWS_ACCESS_KEY     string `json:"aws_access_key"`
 	AWS_SECRET_KEY     string `json:"aws_secret_key"`
@@ -38,6 +38,7 @@ func generateTemplateFile(templateLocation string, s3Args s3WebsiteVariables, te
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func initTerraform(workspaceDir string) {
@@ -112,8 +113,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	workspaceDir := filepath.Join("/tmp", s3Args.CLIENT_WORKSPACE)
-	generateTemplateFile("templates/providers/aws/s3-website/terraform.tpl", s3Args, workspaceDir)
+	workspaceDir := filepath.Join("/tmp", s3Args.CLIENT_NAME)
+	generateTemplateFile("templates/providers/aws/frontend-architecture/terraform.tpl", s3Args, workspaceDir)
 	initTerraform(workspaceDir)
 	planTerraform(workspaceDir)
 	applyTerraform(workspaceDir)
