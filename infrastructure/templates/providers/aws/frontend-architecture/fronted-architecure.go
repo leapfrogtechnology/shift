@@ -1,10 +1,13 @@
-// Backend Initialization
+package frontend_architecture
+
+const InfrastructureTemplate = `
+// Terraform State Backend Initialization
 terraform {
   backend "remote" {
     organization = "lftechnology"
     token = "{{ info.TERRAFORM_TOKEN }}"
     workspaces {
-      name = "{{ info.CLIENT_NAME }}"
+      name = "{{ info.CLIENT_NAME }}-frontend"
     }
   }
 }
@@ -69,7 +72,7 @@ resource "aws_cloudfront_distribution" "www_distribution" {
     compress               = true
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD"]
-    // This needs to match the `origin_id` above.
+    // This needs to match the origin above.
     target_origin_id = "{{ info.AWS_S3_BUCKET_NAME }}"
     min_ttl          = 0
     default_ttl      = 86400
@@ -116,3 +119,4 @@ output "bucket_name" {
 output "frontend_web_url" {
   value = aws_cloudfront_distribution.www_distribution.domain_name
 }
+`
