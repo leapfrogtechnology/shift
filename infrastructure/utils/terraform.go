@@ -90,7 +90,7 @@ func getTerraformOutput(workspaceDir string) {
 	fmt.Println(aurora.Cyan(stdout.String()))
 }
 
-func RunInfrastrucutreChanges(workspaceDir string)  {
+func RunInfrastructureChanges(workspaceDir string)  {
 	initTerraform(workspaceDir)
 	planTerraform(workspaceDir)
 	applyTerraform(workspaceDir)

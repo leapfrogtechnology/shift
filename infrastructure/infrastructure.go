@@ -23,5 +23,5 @@ func InitializeFrontend() {
 	}
 	workspaceDir := filepath.Join("/tmp", frontendArgs.CLIENT_NAME)
 	utils.GenerateFrontendTemplateFile(frontend_architecture.InfrastructureTemplate, frontendArgs, workspaceDir)
-	utils.RunInfrastrucutreChanges(workspaceDir)
+	utils.RunInfrastructureChanges(workspaceDir)
 }
