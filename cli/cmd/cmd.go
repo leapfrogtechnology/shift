@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"os"
-
+	"fmt"
 	"github.com/urfave/cli"
+	"os"
 )
 
 // Info defines the basic information required for the CLI.
