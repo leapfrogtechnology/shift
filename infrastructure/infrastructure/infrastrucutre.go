@@ -6,24 +6,29 @@ import (
 	"github.com/leapfrogtechnology/shift/infrastructure/utils"
 	"path/filepath"
 
-	"github.com/leapfrogtechnology/shift/infrastructure/utils"
 )
 
-func InitializeFrontend(infrastructureArgs string) error{
+func InitializeFrontend(infrastructureArgs []byte) (string, error){
 
 	var frontendArgs utils.FrontendInfrastructureVariables
-	err := json.Unmarshal([]byte(infrastructureArgs), &frontendArgs)
+	utils.LogInfo("Gathering Info")
+	err := json.Unmarshal(infrastructureArgs, &frontendArgs)
 	if err != nil {
 		utils.LogError(err, "Error Parsing Body")
-		return err
+		return "", err
 	}
 	workspaceDir := filepath.Join("/tmp", frontendArgs.CLIENT_NAME)
-
+	utils.LogInfo("Generating Template")
 	err = utils.GenerateFrontendTemplateFile(frontend_architecture.InfrastructureTemplate, frontendArgs, workspaceDir)
 	if err != nil {
 		utils.LogError(err, "Cannot Generate Template")
-		return err
+		return "", err
 	}
-	utils.RunInfrastructureChanges(workspaceDir)
-	return nil
+	utils.LogInfo("Running Infrastructure Changes")
+	infrastructureInfo, err := utils.RunInfrastructureChanges(workspaceDir)
+	if err != nil {
+		utils.LogError(err, "Cannot Run Changes")
+		return "", err
+	}
+	return infrastructureInfo, err
 }

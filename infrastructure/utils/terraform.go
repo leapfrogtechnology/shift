@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/briandowns/spinner"
 	"os/exec"
 	"time"
@@ -13,7 +14,7 @@ func initTerraform(workspaceDir string) error {
 	s.Suffix = "  Initializing"
 	_ = s.Color("cyan", "bold")
 	s.Start()
-	cmd := exec.Command("terraform", "infrastructure")
+	cmd := exec.Command("terraform", "init")
 	cmd.Dir = workspaceDir
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -21,7 +22,8 @@ func initTerraform(workspaceDir string) error {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-		LogError(err, stderr.String())
+		fmt.Println()
+		s.Stop()
 		return err
 	}
 	s.Stop()
@@ -85,24 +87,36 @@ func getTerraformOutput(workspaceDir string) (string, error) {
 	err := cmd.Run()
 	if err != nil {
 		LogError(err, stderr.String())
+		s.Stop()
 		return "", err
 	}
 	s.Stop()
 	return stdout.String(), nil
 }
 
-func RunInfrastructureChanges(workspaceDir string) {
-	if initTerraform(workspaceDir) != nil {
-		return
+func RunInfrastructureChanges(workspaceDir string) (string, error) {
+	LogInfo("Initializing")
+	err := initTerraform(workspaceDir)
+	if err != nil {
+		LogError(err, "Something Went Wrong")
+		return "", err
 	}
-	if planTerraform(workspaceDir) !=nil {
-		return
+	LogInfo("Planning")
+	err = planTerraform(workspaceDir)
+	if err != nil {
+		LogError(err, "Something Went Wrong")
+		return "", err
 	}
-	if applyTerraform(workspaceDir) != nil {
-		return
+	LogInfo("Applying")
+	err = applyTerraform(workspaceDir)
+	if err != nil {
+		LogError(err, "Something Went Wrong")
+		return "", err
 	}
-	if getTerraformOutput(workspaceDir) != nil {
-		return
+	infrastructureInfo, err := getTerraformOutput(workspaceDir)
+	if err != nil {
+		LogError(err, "Something Went Wrong")
+		return "", err
 	}
-
+	return infrastructureInfo, err
 }
