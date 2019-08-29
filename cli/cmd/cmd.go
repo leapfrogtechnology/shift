@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/urfave/cli"
@@ -32,6 +31,15 @@ func Initialize(info *Info) error {
 				fmt.Println("Shift Shift shift")
 			},
 		},
+		cli.Command{
+			Name: "setup",
+			Action: func(ctx *cli.Context) error {
+				Setup()
+
+				return nil
+			},
+		},
 	}
+
 	return app.Run(os.Args)
 }

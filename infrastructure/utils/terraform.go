@@ -104,5 +104,5 @@ func RunInfrastructureChanges(workspaceDir string) {
 	if getTerraformOutput(workspaceDir) != nil {
 		return
 	}
-	
+
 }

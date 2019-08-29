@@ -5,6 +5,8 @@ import (
 	"github.com/leapfrogtechnology/shift/infrastructure/templates/providers/aws/frontend-architecture"
 	"github.com/leapfrogtechnology/shift/infrastructure/utils"
 	"path/filepath"
+
+	"github.com/leapfrogtechnology/shift/infrastructure/utils"
 )
 
 func InitializeFrontend(infrastructureArgs string) error{

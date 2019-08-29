@@ -1,4 +1,4 @@
-package cli
+package main
 
 import (
 	"fmt"
@@ -6,7 +6,8 @@ import (
 	"github.com/leapfrogtechnology/shift/cli/cmd"
 )
 
-func Initialize() {
+// Initialize Cli
+func main() {
 	info := &cmd.Info{
 		Name:        "Shift",
 		Version:     "0.0.1",
