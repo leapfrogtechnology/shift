@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/leapfrogtechnology/shift/infrastructure"
+	"fmt"
 	"os"
 
 	"github.com/urfave/cli"
@@ -24,20 +24,12 @@ func Initialize(info *Info) error {
 
 	app.Commands = []cli.Command{
 		{
-			Name:        "init",
+			Name:        "infrastructure",
 			Description: "Initialize",
 			Aliases:     nil,
 			Usage:       "Initialize your Application",
-			Subcommands: []cli.Command{
-				{
-					Name:        "frontend",
-					Aliases:     nil,
-					Usage:       "Initialize your frontend infrastructure",
-					Description: "Use this to initialize your frontend Infrastructure",
-					Action: func(c *cli.Context) {
-						infrastructure.InitializeFrontend()
-					},
-				},
+			Action: func(c *cli.Context) {
+				fmt.Println("Shift Shift shift")
 			},
 		},
 	}

@@ -15,22 +15,23 @@ type FrontendInfrastructureVariables struct {
 	TERRAFORM_TOKEN    string `json:"terraform_token"`
 }
 
-func GenerateFrontendTemplateFile(template string, s3Args FrontendInfrastructureVariables, terraformPath string) {
+func GenerateFrontendTemplateFile(template string, s3Args FrontendInfrastructureVariables, terraformPath string) error{
 	tpl, err := pongo2.FromString(template)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	out, err := tpl.Execute(pongo2.Context{"info": s3Args})
 	if err != nil {
-		panic(err)
+		return err
 	}
 	terraformFileName := terraformPath + "/infrastructure.tf"
 	err = os.MkdirAll(terraformPath, 0700)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	err = ioutil.WriteFile(terraformFileName, []byte(out), 0600)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
