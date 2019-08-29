@@ -2,11 +2,11 @@ package infrastructure
 
 import (
 	"encoding/json"
-	"github.com/leapfrogtechnology/shift/infrastructure/templates/providers/aws/frontend-architecture"
-	"github.com/leapfrogtechnology/shift/infrastructure/utils"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/leapfrogtechnology/shift/infrastructure/utils"
 )
 
 func InitializeFrontend() {

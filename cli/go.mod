@@ -1,9 +1,10 @@
-module github.com/lftechnology/shift/cli
+module github.com/leapfrogtechnology/shift/cli
 
 go 1.12
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.0.1
-	github.com/pratishshr/envault v1.1.1
+	github.com/AlecAivazis/survey/v2 v2.0.4
+	github.com/briandowns/spinner v1.6.1
+	github.com/go-resty/resty/v2 v2.0.0
 	github.com/urfave/cli v1.21.0
 )
