@@ -5,23 +5,30 @@ const InfrastructureTemplate = `
 terraform {
   backend "remote" {
     organization = "lftechnology"
-    token = "{{ info.TERRAFORM_TOKEN }}"
+    token = "{{ info.Token }}"
     workspaces {
-      name = "{{ info.CLIENT_NAME }}-frontend"
+      name = "{{ info.Client.Project }}-{{ info.Client.Deployment.Name }}-{{ info.Client.Deployment.Type }}"
     }
   }
 }
 
+variable "region" {
+  default = "us-east-1"
+}
+
+variable "bucket_name" {
+  default = "com.shift.{{ info.Client.Project|lower  }}.{{ info.Client.Deployment.Name|lower }}" 
+}
 // Provider Initialization
 provider "aws" {
-  region     = "{{ info.AWS_REGION }}"
-  access_key = "{{ info.AWS_ACCESS_KEY }}"
-  secret_key = "{{ info.AWS_SECRET_KEY }}"
+  region     = var.region
+  access_key = "{{ info.Client.Deployment.AccessKey }}"
+  secret_key = "{{ info.Client.Deployment.SecretKey }}"
 }
 
 //Bucket Initialization
 resource "aws_s3_bucket" "bucket" {
-  bucket = "{{ info.AWS_S3_BUCKET_NAME }}"
+  bucket = var.bucket_name
   acl    = "public-read"
   force_destroy = "true"
 
@@ -39,7 +46,7 @@ resource "aws_s3_bucket" "bucket" {
       "Effect":"Allow",
       "Principal": "*",
       "Action":["s3:GetObject"],
-      "Resource":["arn:aws:s3:::{{ info.AWS_S3_BUCKET_NAME }}/*"]
+      "Resource":["arn:aws:s3:::${var.bucket_name}/*"]
     }
   ]
 }
@@ -60,7 +67,7 @@ resource "aws_cloudfront_distribution" "www_distribution" {
     // Here we're using our S3 bucket's URL!
     domain_name = aws_s3_bucket.bucket.website_endpoint
     // This can be any name to identify this origin.
-    origin_id = "{{ info.AWS_S3_BUCKET_NAME }}"
+    origin_id = var.bucket_name
   }
 
   enabled             = true
@@ -73,7 +80,7 @@ resource "aws_cloudfront_distribution" "www_distribution" {
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD"]
     // This needs to match the origin above.
-    target_origin_id = "{{ info.AWS_S3_BUCKET_NAME }}"
+    target_origin_id = var.bucket_name
     min_ttl          = 0
     default_ttl      = 86400
     max_ttl          = 31536000
@@ -88,8 +95,8 @@ resource "aws_cloudfront_distribution" "www_distribution" {
 
   wait_for_deployment = false
   tags = {
-    Name = "{{ info.AWS_S3_BUCKET_NAME }}"
-    Project = "{{ info.CLIENT_NAME }}"
+    Name = var.bucket_name
+    Project = "{{ info.Client.Project }}-{{ info.Client.Deployment.Name }}-{{ info.Client.Deployment.Type }}"
   }
 
   restrictions {

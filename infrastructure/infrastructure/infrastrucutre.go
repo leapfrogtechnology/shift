@@ -8,18 +8,18 @@ import (
 
 )
 
-func InitializeFrontend(infrastructureArgs []byte) (string, error){
+func InitializeFrontend(ClientArgs []byte) (string, error){
 
-	var frontendArgs utils.FrontendInfrastructureVariables
+	var clientArgs utils.Client
 	utils.LogInfo("Gathering Info")
-	err := json.Unmarshal(infrastructureArgs, &frontendArgs)
+	err := json.Unmarshal(ClientArgs, &clientArgs)
 	if err != nil {
 		utils.LogError(err, "Error Parsing Body")
 		return "", err
 	}
-	workspaceDir := filepath.Join("/tmp", frontendArgs.CLIENT_NAME)
+	workspaceDir := filepath.Join("/tmp", clientArgs.Deployment.Name)
 	utils.LogInfo("Generating Template")
-	err = utils.GenerateFrontendTemplateFile(frontend_architecture.InfrastructureTemplate, frontendArgs, workspaceDir)
+	err = utils.GenerateFrontendTemplateFile(frontend_architecture.InfrastructureTemplate, clientArgs, workspaceDir)
 	if err != nil {
 		utils.LogError(err, "Cannot Generate Template")
 		return "", err

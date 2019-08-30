@@ -66,6 +66,7 @@ func applyTerraform(workspaceDir string) error {
 	err := cmd.Run()
 	if err != nil {
 		LogError(err, stderr.String())
+		s.Stop()
 		return err
 	}
 	s.Stop()
