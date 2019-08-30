@@ -40,7 +40,8 @@ type user struct {
 }
 
 type repo struct {
-	Name string `json:"name"`
+	Name     string `json:"name"`
+	CloneURL string `json:"clone_url"`
 }
 
 // CreatePersonalToken creates a personal access token in github
@@ -112,8 +113,10 @@ func FetchUser(personalToken string) (string, error) {
 }
 
 // FetchOrgRepos fetches user's repositories
-func FetchOrgRepos(personalToken string, organization string) ([]string, error) {
+func FetchOrgRepos(personalToken string, organization string) ([]string, map[string]string, error) {
 	response := []repo{}
+	repos := []string{}
+	repoURL := map[string]string{}
 
 	_, err := http.Client.R().
 		SetHeader("Authorization", "token "+personalToken).
@@ -124,21 +127,22 @@ func FetchOrgRepos(personalToken string, organization string) ([]string, error) 
 		fmt.Println("Error:")
 		fmt.Println(err)
 
-		return []string{}, err
+		return repos, repoURL, err
 	}
-
-	repos := []string{}
 
 	for _, repo := range response {
 		repos = append(repos, repo.Name)
+		repoURL[repo.Name] = repo.CloneURL
 	}
 
-	return repos, nil
+	return repos, repoURL, nil
 }
 
 // FetchUserRepos fetches user's repositories
-func FetchUserRepos(personalToken string) ([]string, error) {
+func FetchUserRepos(personalToken string) ([]string, map[string]string, error) {
 	response := []repo{}
+	repos := []string{}
+	repoURL := map[string]string{}
 
 	_, err := http.Client.R().
 		SetHeader("Authorization", "token "+personalToken).
@@ -149,14 +153,13 @@ func FetchUserRepos(personalToken string) ([]string, error) {
 		fmt.Println("Error:")
 		fmt.Println(err)
 
-		return []string{}, err
+		return repos, repoURL, err
 	}
-
-	repos := []string{}
 
 	for _, repo := range response {
 		repos = append(repos, repo.Name)
+		repoURL[repo.Name] = repo.CloneURL
 	}
 
-	return repos, nil
+	return repos, repoURL, nil
 }

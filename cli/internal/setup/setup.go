@@ -143,14 +143,15 @@ func chooseOrganization(personalToken string) string {
 	return org
 }
 
-func chooseRepo(personalToken string, organization string) string {
+func chooseRepo(personalToken string, organization string) (string, string) {
 	repos := []string{}
+	repoURL := map[string]string{}
 
 	spinner.Start("Fetching your repositories...")
 	if strings.Contains(organization, "(User)") {
-		repos, _ = github.FetchUserRepos(personalToken)
+		repos, repoURL, _ = github.FetchUserRepos(personalToken)
 	} else {
-		repos, _ = github.FetchOrgRepos(personalToken, organization)
+		repos, repoURL, _ = github.FetchOrgRepos(personalToken, organization)
 	}
 	spinner.Stop()
 
@@ -166,7 +167,7 @@ func chooseRepo(personalToken string, organization string) string {
 		fmt.Println(err)
 	}
 
-	return org
+	return org, repoURL[org]
 }
 
 // Run initializes setup for shift projects.
@@ -180,7 +181,7 @@ func Run() {
 	spinner.Stop()
 
 	organization := chooseOrganization(personalToken)
-	repo := chooseRepo(personalToken, organization)
+	repo, repoURL := chooseRepo(personalToken, organization)
 
 	fmt.Print("ProjectDetails: ")
 	fmt.Println(projectDetails)
@@ -196,4 +197,6 @@ func Run() {
 
 	fmt.Print("Repository: ")
 	fmt.Println(repo)
+	fmt.Print("Clone URL: ")
+	fmt.Println(repoURL)
 }
