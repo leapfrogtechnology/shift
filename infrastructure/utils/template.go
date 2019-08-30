@@ -6,21 +6,35 @@ import (
 	"os"
 )
 
-type FrontendInfrastructureVariables struct {
-	CLIENT_NAME        string `json:"client_name"`
-	AWS_REGION         string `json:"aws_region"`
-	AWS_ACCESS_KEY     string `json:"aws_access_key"`
-	AWS_SECRET_KEY     string `json:"aws_secret_key"`
-	AWS_S3_BUCKET_NAME string `json:"aws_s3_bucket_name"`
-	TERRAFORM_TOKEN    string `json:"terraform_token"`
+type deployment struct {
+	Name        string `json:"name"`
+	Platform    string `json:"platform"`
+	AccessKey   string `json:"accessKey"`
+	SecretKey   string `json:"secretKey"`
+	Type        string `json:"type"`
+	GitProvider string `json:"gitProvider"`
+	GitToken    string `json:"gitToken"`
+	CloneUrl    string `json:"cloneUrl"`
+}
+type Client struct {
+	Project    string     `json:"project"`
+	Deployment deployment `json:"deployment"`
+}
+type infrastructure struct {
+	Client Client
+	Token  string
 }
 
-func GenerateFrontendTemplateFile(template string, s3Args FrontendInfrastructureVariables, terraformPath string) error{
+func GenerateFrontendTemplateFile(template string, client Client, terraformPath string) error {
+	token := os.Getenv("TERRAFORM_TOKEN")
+	LogInfo(token)
+	infrastructure := infrastructure{client, token}
+
 	tpl, err := pongo2.FromString(template)
 	if err != nil {
 		return err
 	}
-	out, err := tpl.Execute(pongo2.Context{"info": s3Args})
+	out, err := tpl.Execute(pongo2.Context{"info": infrastructure})
 	if err != nil {
 		return err
 	}

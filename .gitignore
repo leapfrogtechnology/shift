@@ -23,6 +23,7 @@
 
 # Built Go Packages
 shift
+shift-infrastructure
 
 # Configfiles
 config.json
