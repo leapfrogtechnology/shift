@@ -123,7 +123,7 @@ func askGitCredentials(gitProvider string) *github.GitCredentials {
 }
 
 func chooseOrganization(personalToken string) string {
-	spinner.Start()
+	spinner.Start("Fetching your organizations...")
 	user, _ := github.FetchUser(personalToken)
 	organizations, _ := github.FetchOrganizations(personalToken)
 	spinner.Stop()
@@ -146,7 +146,7 @@ func chooseOrganization(personalToken string) string {
 func chooseRepo(personalToken string, organization string) string {
 	repos := []string{}
 
-	spinner.Start()
+	spinner.Start("Fetching your repositories...")
 	if strings.Contains(organization, "(User)") {
 		repos, _ = github.FetchUserRepos(personalToken)
 	} else {
@@ -175,7 +175,7 @@ func Run() {
 	deploymentDetails := askDeploymentDetails()
 	gitCredentials := askGitCredentials(deploymentDetails.GitProvider)
 
-	spinner.Start()
+	spinner.Start("Connecting to Github...")
 	personalToken, _ := github.CreatePersonalToken(gitCredentials)
 	spinner.Stop()
 

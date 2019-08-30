@@ -45,6 +45,7 @@ type repo struct {
 
 // CreatePersonalToken creates a personal access token in github
 func CreatePersonalToken(credentials *GitCredentials) (string, error) {
+	fmt.Print("Connecting to Github... ")
 	data := &createPersonalTokenBody{
 		Note:   "Shift CLI:" + time.Now().String(),
 		Scopes: []string{"repo", "read:org"},
