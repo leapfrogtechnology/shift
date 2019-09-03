@@ -19,6 +19,7 @@ type deployment struct {
 	CloneURL     string `json:"cloneURL"`
 	BuildCommand string `json:"BuildCommand"`
 	DistFolder   string `json:"distFolder"`
+	Bucket       string `json:"bucket"`
 }
 
 type projectResponse struct {
@@ -43,7 +44,7 @@ func deploy(msg []byte) {
 	s3.Deploy(s3.Data{
 		AccessKey:  project.Deployment.AccessKey,
 		SecretKey:  project.Deployment.SecretKey,
-		Bucket:     "com.lftechnology.shift-test",
+		Bucket:     project.Deployment.Bucket,
 		DistFolder: project.Deployment.DistFolder,
 	})
 }
