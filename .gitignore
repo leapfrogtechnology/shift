@@ -28,3 +28,5 @@ shift-infrastructure
 # Configfiles
 config.json
 
+# artifacts
+artifact

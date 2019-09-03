@@ -22,9 +22,15 @@ type deployment struct {
 	Bucket       string `json:"bucket"`
 }
 
+type infrastructure struct {
+	BucketName string `json:"bucketName"`
+	URL        string `json:"url"`
+}
+
 type projectResponse struct {
-	ProjectName string
-	Deployment  deployment
+	ProjectName string     `json:"projectName"`
+	Deployment  deployment `json:"deployment"`
+	Data        infrastructure
 }
 
 func deploy(msg []byte) {
@@ -44,7 +50,8 @@ func deploy(msg []byte) {
 	s3.Deploy(s3.Data{
 		AccessKey:  project.Deployment.AccessKey,
 		SecretKey:  project.Deployment.SecretKey,
-		Bucket:     project.Deployment.Bucket,
+		Bucket:     project.Data.BucketName,
+		URL:        project.Data.URL,
 		DistFolder: project.Deployment.DistFolder,
 	})
 }

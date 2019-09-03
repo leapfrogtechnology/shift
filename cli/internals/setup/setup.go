@@ -38,8 +38,8 @@ type deployment struct {
 }
 
 type projectRequest struct {
-	ProjectName string
-	Deployment  deployment
+	ProjectName string     `json:"projectName"`
+	Deployment  deployment `json:"deployment"`
 }
 
 type buildInformation struct {
