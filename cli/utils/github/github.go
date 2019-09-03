@@ -14,7 +14,7 @@ var baseURL = "https://api.github.com"
 var userURL = baseURL + "/user"
 var organizationsURL = baseURL + "/user/orgs"
 var createTokenURL = baseURL + "/authorizations"
-var userReposURL = baseURL + "/user/repos?affiliation=owner"
+var userReposURL = baseURL + "/user/repos?affiliation=owner&per_page=1000"
 
 // GitCredentials describe the credentials required for Github
 type GitCredentials struct {
@@ -46,7 +46,6 @@ type repo struct {
 
 // CreatePersonalToken creates a personal access token in github
 func CreatePersonalToken(credentials *GitCredentials) (string, error) {
-	fmt.Print("Connecting to Github... ")
 	data := &createPersonalTokenBody{
 		Note:   "Shift CLI:" + time.Now().String(),
 		Scopes: []string{"repo", "read:org"},
@@ -121,7 +120,7 @@ func FetchOrgRepos(personalToken string, organization string) ([]string, map[str
 	_, err := http.Client.R().
 		SetHeader("Authorization", "token "+personalToken).
 		SetResult(&response).
-		Get(baseURL + "/orgs/" + organization + "/repos")
+		Get(baseURL + "/orgs/" + organization + "/repos?per_page=1000")
 
 	if err != nil {
 		fmt.Println("Error:")

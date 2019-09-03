@@ -1,10 +1,12 @@
 package setup
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/leapfrogtechnology/shift/cli/services/mq"
 	"github.com/leapfrogtechnology/shift/cli/utils/github"
 	"github.com/leapfrogtechnology/shift/cli/utils/spinner"
 )
@@ -20,6 +22,29 @@ type deploymentDetails struct {
 	SecretKey      string
 	DeploymentType string
 	GitProvider    string
+}
+
+type deployment struct {
+	Name         string `json:"name"`
+	Platform     string `json:"platform"`
+	AccessKey    string `json:"accessKey"`
+	SecretKey    string `json:"secretKey"`
+	Type         string `json:"type"`
+	GitProvider  string `json:"gitProvider"`
+	GitToken     string `json:"gitToken"`
+	CloneURL     string `json:"cloneURL"`
+	BuildCommand string `json:"buildCommand"`
+	DistFolder   string `json:"distFolder"`
+}
+
+type projectRequest struct {
+	ProjectName string
+	Deployment  deployment
+}
+
+type buildInformation struct {
+	BuildCommand string
+	DistFolder   string
 }
 
 func askProjectDetails() *projectDetails {
@@ -170,6 +195,32 @@ func chooseRepo(personalToken string, organization string) (string, string) {
 	return org, repoURL[org]
 }
 
+func askBuildInformation() *buildInformation {
+	questions := []*survey.Question{
+		{
+			Name: "buildCommand",
+			Prompt: &survey.Input{
+				Message: "Build Command: ",
+			},
+		},
+		{
+			Name: "distFolder",
+			Prompt: &survey.Input{
+				Message: "Distribution Folder: ",
+			},
+		},
+	}
+
+	answers := &buildInformation{}
+	err := survey.Ask(questions, answers)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return answers
+}
+
 // Run initializes setup for shift projects.
 func Run() {
 	projectDetails := askProjectDetails()
@@ -181,22 +232,29 @@ func Run() {
 	spinner.Stop()
 
 	organization := chooseOrganization(personalToken)
-	repo, repoURL := chooseRepo(personalToken, organization)
+	_, repoURL := chooseRepo(personalToken, organization)
 
-	fmt.Print("ProjectDetails: ")
-	fmt.Println(projectDetails)
+	buildInformation := askBuildInformation()
 
-	fmt.Print("DeploymentDetails: ")
-	fmt.Println(deploymentDetails)
+	projectRequest := projectRequest{
+		ProjectName: projectDetails.ProjectName,
+		Deployment: deployment{
+			Name:         deploymentDetails.DeploymentName,
+			Platform:     deploymentDetails.CloudProvider,
+			AccessKey:    deploymentDetails.AccessKey,
+			SecretKey:    deploymentDetails.SecretKey,
+			Type:         deploymentDetails.DeploymentType,
+			GitProvider:  deploymentDetails.GitProvider,
+			GitToken:     personalToken,
+			CloneURL:     repoURL,
+			BuildCommand: buildInformation.BuildCommand,
+			DistFolder:   buildInformation.DistFolder,
+		},
+	}
 
-	fmt.Print("Access Token: ")
-	fmt.Println(personalToken)
+	projectRequestJSON, _ := json.Marshal(projectRequest)
 
-	fmt.Print("Organization: ")
-	fmt.Println(organization)
+	fmt.Println(string(projectRequestJSON))
 
-	fmt.Print("Repository: ")
-	fmt.Println(repo)
-	fmt.Print("Clone URL: ")
-	fmt.Println(repoURL)
+	mq.Publish(projectRequestJSON)
 }
