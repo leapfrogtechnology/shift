@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	awsService "github.com/leapfrogtechnology/shift/deployment/services/aws"
+	fileUtil "github.com/leapfrogtechnology/shift/deployment/utils/file"
 	"github.com/leapfrogtechnology/shift/deployment/utils/spinner"
 )
 
@@ -18,6 +19,7 @@ type Data struct {
 	SecretKey  string
 	Bucket     string
 	DistFolder string
+	URL        string
 }
 
 // Deploy to S3 bucket
@@ -47,13 +49,15 @@ func Deploy(data Data) {
 	for _, file := range fileList {
 		f, _ := os.Open(file)
 
-		key := strings.TrimPrefix(file, "artifact"+data.DistFolder)
+		key := strings.TrimPrefix(file, "artifact/"+data.DistFolder)
+		contentType := fileUtil.GetFileContentType(file)
 
 		// Upload the file to S3.
 		output, err := uploader.Upload(&s3manager.UploadInput{
-			Bucket: aws.String(data.Bucket),
-			Key:    aws.String(key),
-			Body:   f,
+			Bucket:      aws.String(data.Bucket),
+			Key:         aws.String(key),
+			ContentType: aws.String(contentType),
+			Body:        f,
 		})
 
 		if err != nil {
@@ -61,9 +65,10 @@ func Deploy(data Data) {
 			fmt.Println(err)
 		}
 
-		fmt.Println(output)
+		fmt.Println(output.Location)
 	}
 
 	fmt.Println("Uploaded all files.")
+	fmt.Println("Project deployed at " + data.URL)
 	spinner.Stop()
 }
