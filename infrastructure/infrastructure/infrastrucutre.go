@@ -5,10 +5,9 @@ import (
 	"github.com/leapfrogtechnology/shift/infrastructure/templates/providers/aws/frontend-architecture"
 	"github.com/leapfrogtechnology/shift/infrastructure/utils"
 	"path/filepath"
-
 )
 
-func InitializeFrontend(ClientArgs []byte) (string, error){
+func InitializeFrontend(ClientArgs []byte) (string, error) {
 
 	var clientArgs utils.Client
 	utils.LogInfo("Gathering Info")
@@ -25,10 +24,23 @@ func InitializeFrontend(ClientArgs []byte) (string, error){
 		return "", err
 	}
 	utils.LogInfo("Running Infrastructure Changes")
-	infrastructureInfo, err := utils.RunInfrastructureChanges(workspaceDir)
+	bucketName, url, err := utils.RunInfrastructureChanges(workspaceDir)
 	if err != nil {
 		utils.LogError(err, "Cannot Run Changes")
 		return "", err
 	}
-	return infrastructureInfo, err
+	result := utils.FrontendResult{
+		Project:    clientArgs.Project,
+		Deployment: clientArgs.Deployment,
+		Data:       utils.Frontend{
+			BucketName: bucketName,
+			Url:        url,
+		},
+	}
+	out, err := json.Marshal(result)
+	if err != nil {
+		utils.LogError(err, "Error Marshalling output")
+		return "", err
+	}
+	return string(out), err
 }

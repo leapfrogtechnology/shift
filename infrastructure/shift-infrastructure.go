@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/leapfrogtechnology/shift/infrastructure/infrastructure"
+	"github.com/leapfrogtechnology/shift/infrastructure/internal"
 	"github.com/leapfrogtechnology/shift/infrastructure/utils"
 	"github.com/streadway/amqp"
 	"log"
@@ -18,23 +19,23 @@ func main() {
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		"initialize", // name
-		false,   // durable
-		false,   // delete when usused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
+		"Infrastructure", // name
+		false,            // durable
+		false,            // delete when usused
+		false,            // exclusive
+		false,            // no-wait
+		nil,              // arguments
 	)
 	utils.FailOnError(err, "Failed to declare a queue")
 
 	messages, err := ch.Consume(
 		q.Name, //name
-		"", //consumer
-		true, //autoAck
-		false, // exclusive
-		false, //noLocal
-		false, //noWait
-		nil, // args
+		"",     //consumer
+		false,  //autoAck
+		false,  // exclusive
+		false,  //noLocal
+		false,  //noWait
+		nil,    // args
 	)
 	forever := make(chan bool)
 	go func() {
@@ -45,6 +46,12 @@ func main() {
 				utils.LogError(err, "Cannot Init Infrastructure")
 			} else {
 				utils.LogOutput(infrastructureInfo)
+				err = internal.Publish(infrastructureInfo)
+				if err != nil {
+					utils.LogError(err, "Cannot Publish Output")
+				} else {
+					message.Ack(false)
+				}
 			}
 		}
 	}()

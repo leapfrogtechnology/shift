@@ -6,20 +6,6 @@ import (
 	"os"
 )
 
-type deployment struct {
-	Name        string `json:"name"`
-	Platform    string `json:"platform"`
-	AccessKey   string `json:"accessKey"`
-	SecretKey   string `json:"secretKey"`
-	Type        string `json:"type"`
-	GitProvider string `json:"gitProvider"`
-	GitToken    string `json:"gitToken"`
-	CloneUrl    string `json:"cloneUrl"`
-}
-type Client struct {
-	Project    string     `json:"project"`
-	Deployment deployment `json:"deployment"`
-}
 type infrastructure struct {
 	Client Client
 	Token  string
@@ -27,7 +13,6 @@ type infrastructure struct {
 
 func GenerateFrontendTemplateFile(template string, client Client, terraformPath string) error {
 	token := os.Getenv("TERRAFORM_TOKEN")
-	LogInfo(token)
 	infrastructure := infrastructure{client, token}
 
 	tpl, err := pongo2.FromString(template)
