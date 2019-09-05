@@ -1,13 +1,16 @@
-package utils
+package terraform
 
 import (
 	"bytes"
 	"fmt"
 	"github.com/briandowns/spinner"
+	"github.com/leapfrogtechnology/shift/core/utils/logger"
 	"os/exec"
 	"strings"
 	"time"
 )
+
+// TODO use terraform Library to remove the dependency of installing terraform
 
 func initTerraform(workspaceDir string) error {
 	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond) // Build our new spinner
@@ -31,27 +34,6 @@ func initTerraform(workspaceDir string) error {
 	return nil
 }
 
-func planTerraform(workspaceDir string) error {
-	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond) // Build our new spinner
-	s.Prefix = "  "
-	s.Suffix = "  Planning"
-	_ = s.Color("cyan", "bold")
-	s.Start()
-	cmd := exec.Command("terraform", "plan")
-	cmd.Dir = workspaceDir
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err := cmd.Run()
-	if err != nil {
-		LogError(err, stderr.String())
-		return err
-	}
-	s.Stop()
-	return nil
-}
-
 func applyTerraform(workspaceDir string) error {
 	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond) // Build our new spinner
 	s.Prefix = "  "
@@ -66,7 +48,7 @@ func applyTerraform(workspaceDir string) error {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-		LogError(err, stderr.String())
+		logger.LogError(err, stderr.String())
 		s.Stop()
 		return err
 	}
@@ -74,7 +56,7 @@ func applyTerraform(workspaceDir string) error {
 	return nil
 }
 
-func getTerraformOutput(workspaceDir string) (string, string, error) {
+func getTerraformOutputFrontend(workspaceDir string) (string, string, error) {
 	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond) // Build our new spinner
 	s.Prefix = "  "
 	s.Suffix = "  Generating Output"
@@ -88,7 +70,7 @@ func getTerraformOutput(workspaceDir string) (string, string, error) {
 	cmd1.Stderr = &stderr1
 	err := cmd1.Run()
 	if err != nil {
-		LogError(err, stderr1.String())
+		logger.LogError(err, stderr1.String())
 		s.Stop()
 		return "", "", err
 	}
@@ -101,7 +83,7 @@ func getTerraformOutput(workspaceDir string) (string, string, error) {
 	cmd2.Stderr = &stderr2
 	err = cmd2.Run()
 	if err != nil {
-		LogError(err, stderr2.String())
+		logger.LogError(err, stderr2.String())
 		s.Stop()
 		return "", "", err
 	}
@@ -111,28 +93,22 @@ func getTerraformOutput(workspaceDir string) (string, string, error) {
 	return bucketName, url, err
 }
 
-func RunInfrastructureChanges(workspaceDir string) (string, string, error) {
-	LogInfo("Initializing")
+func RunFrontendInfrastructureChanges(workspaceDir string) (string, string, error) {
+	logger.LogInfo("Initializing")
 	err := initTerraform(workspaceDir)
 	if err != nil {
-		LogError(err, "Something Went Wrong")
+		logger.LogError(err, "Something Went Wrong")
 		return "", "", err
 	}
-	//LogInfo("Planning")
-	//err = planTerraform(workspaceDir)
-	//if err != nil {
-	//	LogError(err, "Something Went Wrong")
-	//	return "", "", err
-	//}
-	LogInfo("Applying")
+	logger.LogInfo("Applying")
 	err = applyTerraform(workspaceDir)
 	if err != nil {
-		LogError(err, "Something Went Wrong")
+		logger.LogError(err, "Something Went Wrong")
 		return "", "", err
 	}
-	bucketName, url, err := getTerraformOutput(workspaceDir)
+	bucketName, url, err := getTerraformOutputFrontend(workspaceDir)
 	if err != nil {
-		LogError(err, "Something Went Wrong")
+		logger.LogError(err, "Something Went Wrong")
 		return "", "", err
 	}
 	return bucketName, url, err
