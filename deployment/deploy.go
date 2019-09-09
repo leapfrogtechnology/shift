@@ -43,6 +43,8 @@ func deploy(msg []byte) {
 		CloneURL:     project.Deployment.CloneURL,
 		BuildCommand: project.Deployment.BuildCommand,
 		DistFolder:   project.Deployment.DistFolder,
+		AccessKey:    project.Deployment.AccessKey,
+		SecretKey:    project.Deployment.SecretKey,
 	}
 
 	frontend.Build(buildData)
