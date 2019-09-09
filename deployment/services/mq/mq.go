@@ -22,10 +22,10 @@ func getQueue() (*amqp.Connection, *amqp.Channel, *amqp.Queue) {
 	failOnError(err, "Failed to open a channel")
 
 	q, err := ch.QueueDeclare("Deployment",
-		false, //durable bool
-		false, //autoDelete bool
-		false, //exclusive bool
-		false, //noWait bool
+		false, // durable bool
+		false, // autoDelete bool
+		false, // exclusive bool
+		false, // noWait bool
 		nil,   // args amqp.Table
 	)
 

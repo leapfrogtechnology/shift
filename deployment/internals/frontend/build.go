@@ -26,5 +26,5 @@ func Build(data BuildData) {
 	fmt.Println(data.CloneURL)
 	cloneURL := "https://" + data.GitToken + "@" + data.CloneURL[8:]
 
-	shell.Execute("export AWS_ACCESS_KEY_ID=" + data.AccessKey + " && export AWS_SECRET_ACCESS_KEY=" + data.SecretKey + " && rm -rf artifact && mkdir artifact && cd artifact &&" + "git clone " + cloneURL + "&&" + data.BuildCommand)
+	shell.Execute("export AWS_ACCESS_KEY_ID=" + data.AccessKey + " && export AWS_SECRET_ACCESS_KEY=" + data.SecretKey + " && cd /tmp && rm -rf artifact && mkdir artifact && cd artifact &&" + "git clone " + cloneURL + "&&" + data.BuildCommand)
 }
