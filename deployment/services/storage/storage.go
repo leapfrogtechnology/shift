@@ -8,8 +8,10 @@ import (
 	"github.com/leapfrogtechnology/shift/deployment/domain/project"
 )
 
+type deployment map[string]project.Response
+
 // Data is stored as shift.json.
-type Data map[string]project.Response
+type Data map[string]deployment
 
 var saveFilePath = "/var/lib/shift"
 
@@ -37,7 +39,13 @@ func read() Data {
 func Save(project project.Response) {
 	jsonData := read()
 
-	jsonData[project.ProjectName] = project
+	if _, exists := jsonData[project.ProjectName]; exists {
+		jsonData[project.ProjectName][project.Deployment.Name] = project
+	} else {
+		jsonData[project.ProjectName] = deployment{
+			project.Deployment.Name: project,
+		}
+	}
 
 	data, _ := json.MarshalIndent(jsonData, "", " ")
 

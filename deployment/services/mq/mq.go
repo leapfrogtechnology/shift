@@ -55,6 +55,7 @@ func Consume(deploy func([]byte)) {
 
 	defer conn.Close()
 	defer ch.Close()
+
 	msgs, err := ch.Consume(
 		q.Name, // queue string
 		"",     // consumer string
