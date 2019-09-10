@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/urfave/cli"
 	"os"
+
+	"github.com/urfave/cli"
 )
 
 // Info defines the basic information required for the CLI.
@@ -35,6 +36,17 @@ func Initialize(info *Info) error {
 			Name: "setup",
 			Action: func(ctx *cli.Context) error {
 				Setup()
+
+				return nil
+			},
+		},
+		cli.Command{
+			Name: "deploy",
+			Action: func(ctx *cli.Context) error {
+				project := ctx.Args().Get(0)
+				deployment := ctx.Args().Get(1)
+
+				Deploy(project, deployment)
 
 				return nil
 			},

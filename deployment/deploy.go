@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/leapfrogtechnology/shift/deployment/domain/project"
 	"github.com/leapfrogtechnology/shift/deployment/internals/frontend"
@@ -42,9 +43,20 @@ func triggerDeploy(msg []byte) {
 	triggerRequest := project.TriggerRequest{}
 	json.Unmarshal(msg, &triggerRequest)
 
+	jsonData := storage.Read()
+
+	deploymentData := jsonData[triggerRequest.Project][triggerRequest.Deployment]
+
+	if _, ok := jsonData[triggerRequest.Project][triggerRequest.Deployment]; ok {
+		deploymentDataJSON, _ := json.Marshal(deploymentData)
+
+		deployment.Publish(deploymentDataJSON)
+	} else {
+		fmt.Println("Deployment " + triggerRequest.Deployment + " for Project " + triggerRequest.Project + " not found")
+	}
 }
 
 func main() {
+	go trigger.Consume(triggerDeploy)
 	deployment.Consume(deploy)
-	trigger.Consume(triggerDeploy)
 }
