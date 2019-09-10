@@ -26,7 +26,7 @@ func getQueue(ch *amqp.Channel, queueName string) *amqp.Queue {
 		false,     // no-wait
 		nil,       // arguments
 	)
-	logger.FailOnError(err, "Failed to declare a queue: "+ queueName)
+	logger.FailOnError(err, "Failed to declare a queue: "+queueName)
 	return &q
 }
 
@@ -35,7 +35,7 @@ func Consume(ch *amqp.Channel, qName string) <-chan amqp.Delivery {
 	messages, err := ch.Consume(
 		q.Name, //name
 		"",     //consumer
-		false,  //autoAck
+		true,   //autoAck
 		false,  // exclusive
 		false,  //noLocal
 		false,  //noWait
