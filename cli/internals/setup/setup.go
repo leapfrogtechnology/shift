@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/leapfrogtechnology/shift/cli/services/mq"
+	"github.com/leapfrogtechnology/shift/cli/services/mq/infrastructure"
 	"github.com/leapfrogtechnology/shift/cli/utils/github"
 	"github.com/leapfrogtechnology/shift/cli/utils/spinner"
 )
@@ -256,5 +256,5 @@ func Run() {
 
 	fmt.Println(string(projectRequestJSON))
 
-	mq.Publish(projectRequestJSON)
+	infrastructure.Publish(projectRequestJSON)
 }

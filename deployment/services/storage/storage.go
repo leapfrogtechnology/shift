@@ -22,7 +22,7 @@ func failOnError(err error, msg string) {
 }
 
 // Read parses data from shift.json
-func read() Data {
+func Read() Data {
 	data, err := ioutil.ReadFile(saveFilePath + "/shift.json")
 	failOnError(err, "Error reading file.")
 
@@ -37,7 +37,7 @@ func read() Data {
 
 // Save persists project data in shift.json.
 func Save(project project.Response) {
-	jsonData := read()
+	jsonData := Read()
 
 	if _, exists := jsonData[project.ProjectName]; exists {
 		jsonData[project.ProjectName][project.Deployment.Name] = project

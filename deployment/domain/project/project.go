@@ -25,3 +25,9 @@ type Response struct {
 	Deployment  deployment     `json:"deployment"`
 	Data        infrastructure `json:"data"`
 }
+
+// TriggerRequest defines the requst to trigger a deployment.
+type TriggerRequest struct {
+	Project    string `json:"project"`
+	Deployment string `json:"deployment"`
+}
