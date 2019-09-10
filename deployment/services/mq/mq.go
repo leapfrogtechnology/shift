@@ -12,8 +12,9 @@ func failOnError(err error, msg string) {
 	}
 }
 
-func getQueue() (*amqp.Connection, *amqp.Channel, *amqp.Queue) {
-	conn, err := amqp.Dial("amqp://shift:shiftdeveloper@localhost:5672")
+// GetConnection returns the connection to rabbitmq
+func GetConnection() *amqp.Connection {
+	conn, err := amqp.Dial("amqp://shift:shiftdeveloper@dev-shiftmq.lftechnology.com:5672")
 
 	failOnError(err, "Failed to connect to RabbitMQ")
 
