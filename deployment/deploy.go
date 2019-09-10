@@ -6,7 +6,8 @@ import (
 	"github.com/leapfrogtechnology/shift/deployment/domain/project"
 	"github.com/leapfrogtechnology/shift/deployment/internals/frontend"
 	"github.com/leapfrogtechnology/shift/deployment/services/aws/s3"
-	"github.com/leapfrogtechnology/shift/deployment/services/mq"
+	"github.com/leapfrogtechnology/shift/deployment/services/mq/deployment"
+	"github.com/leapfrogtechnology/shift/deployment/services/mq/trigger"
 	"github.com/leapfrogtechnology/shift/deployment/services/storage"
 )
 
@@ -37,6 +38,13 @@ func deploy(msg []byte) {
 	storage.Save(projectResponse)
 }
 
+func triggerDeploy(msg []byte) {
+	triggerRequest := project.TriggerRequest{}
+	json.Unmarshal(msg, &triggerRequest)
+
+}
+
 func main() {
-	mq.Consume(deploy)
+	deployment.Consume(deploy)
+	trigger.Consume(triggerDeploy)
 }
