@@ -2,60 +2,61 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 
+	"github.com/leapfrogtechnology/shift/deployment/domain/project"
 	"github.com/leapfrogtechnology/shift/deployment/internals/frontend"
 	"github.com/leapfrogtechnology/shift/deployment/services/aws/s3"
-	"github.com/leapfrogtechnology/shift/deployment/services/mq"
+	"github.com/leapfrogtechnology/shift/deployment/services/mq/deployment"
+	"github.com/leapfrogtechnology/shift/deployment/services/mq/trigger"
+	"github.com/leapfrogtechnology/shift/deployment/services/storage"
 )
 
-type deployment struct {
-	Name         string `json:"name"`
-	Platform     string `json:"platform"`
-	AccessKey    string `json:"accessKey"`
-	SecretKey    string `json:"secretKey"`
-	Type         string `json:"type"`
-	GitProvider  string `json:"gitProvider"`
-	GitToken     string `json:"gitToken"`
-	CloneURL     string `json:"cloneURL"`
-	BuildCommand string `json:"BuildCommand"`
-	DistFolder   string `json:"distFolder"`
-	Bucket       string `json:"bucket"`
-}
-
-type infrastructure struct {
-	BucketName string `json:"bucketName"`
-	URL        string `json:"url"`
-}
-
-type projectResponse struct {
-	ProjectName string     `json:"projectName"`
-	Deployment  deployment `json:"deployment"`
-	Data        infrastructure
-}
-
 func deploy(msg []byte) {
-	project := projectResponse{}
-	json.Unmarshal(msg, &project)
+	projectResponse := project.Response{}
+	json.Unmarshal(msg, &projectResponse)
 
 	buildData := frontend.BuildData{
-		GitToken:     project.Deployment.GitToken,
-		Platform:     project.Deployment.Platform,
-		CloneURL:     project.Deployment.CloneURL,
-		BuildCommand: project.Deployment.BuildCommand,
-		DistFolder:   project.Deployment.DistFolder,
+		GitToken:     projectResponse.Deployment.GitToken,
+		Platform:     projectResponse.Deployment.Platform,
+		CloneURL:     projectResponse.Deployment.CloneURL,
+		BuildCommand: projectResponse.Deployment.BuildCommand,
+		DistFolder:   projectResponse.Deployment.DistFolder,
+		AccessKey:    projectResponse.Deployment.AccessKey,
+		SecretKey:    projectResponse.Deployment.SecretKey,
 	}
 
 	frontend.Build(buildData)
 
 	s3.Deploy(s3.Data{
-		AccessKey:  project.Deployment.AccessKey,
-		SecretKey:  project.Deployment.SecretKey,
-		Bucket:     project.Data.BucketName,
-		URL:        project.Data.URL,
-		DistFolder: project.Deployment.DistFolder,
+		AccessKey:  projectResponse.Deployment.AccessKey,
+		SecretKey:  projectResponse.Deployment.SecretKey,
+		Bucket:     projectResponse.Data.BucketName,
+		URL:        projectResponse.Data.URL,
+		DistFolder: projectResponse.Deployment.DistFolder,
 	})
+
+	storage.Save(projectResponse)
+}
+
+func triggerDeploy(msg []byte) {
+	triggerRequest := project.TriggerRequest{}
+	json.Unmarshal(msg, &triggerRequest)
+
+	jsonData := storage.Read()
+
+	deploymentData := jsonData[triggerRequest.Project][triggerRequest.Deployment]
+
+	if _, ok := jsonData[triggerRequest.Project][triggerRequest.Deployment]; ok {
+		deploymentDataJSON, _ := json.Marshal(deploymentData)
+
+		deployment.Publish(deploymentDataJSON)
+	} else {
+		fmt.Println("Deployment " + triggerRequest.Deployment + " for Project " + triggerRequest.Project + " not found")
+	}
 }
 
 func main() {
-	mq.Consume(deploy)
+	go trigger.Consume(triggerDeploy)
+	deployment.Consume(deploy)
 }
