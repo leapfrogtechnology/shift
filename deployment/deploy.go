@@ -31,8 +31,8 @@ func deploy(msg []byte) {
 	s3.Deploy(s3.Data{
 		AccessKey:  projectResponse.Deployment.AccessKey,
 		SecretKey:  projectResponse.Deployment.SecretKey,
-		Bucket:     projectResponse.Data.BucketName,
-		URL:        projectResponse.Data.URL,
+		Bucket:     projectResponse.Data.BucketName.Value,
+		URL:        projectResponse.Data.FrontendWebURL.Value,
 		DistFolder: projectResponse.Deployment.DistFolder,
 	})
 

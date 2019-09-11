@@ -14,9 +14,15 @@ type deployment struct {
 	Bucket       string `json:"bucket"`
 }
 
+type terraformOutput struct {
+	Sensitive bool   `json:"sensitive"`
+	Type      string `json:"type"`
+	Value     string `json:"value"`
+}
+
 type infrastructure struct {
-	BucketName string `json:"bucketName"`
-	URL        string `json:"url"`
+	BucketName     terraformOutput `json:"bucketName"`
+	FrontendWebURL terraformOutput `json:"appUrl"`
 }
 
 // Response defines the response from message queue.

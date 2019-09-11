@@ -29,7 +29,7 @@ func Deploy(data Data) {
 
 	fileList := []string{}
 
-	filepath.Walk("./artifact/"+data.DistFolder,
+	filepath.Walk("/tmp/artifact/source/"+data.DistFolder,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -46,10 +46,14 @@ func Deploy(data Data) {
 
 	spinner.Start("Uploading")
 
+	print(fileList)
+	print("----")
 	for _, file := range fileList {
 		f, _ := os.Open(file)
 
-		key := strings.TrimPrefix(file, "artifact/"+data.DistFolder)
+		fmt.Println(file)
+
+		key := strings.TrimPrefix(file, "/tmp/artifact/source/"+data.DistFolder)
 		contentType := fileUtil.GetFileContentType(file)
 
 		// Upload the file to S3.

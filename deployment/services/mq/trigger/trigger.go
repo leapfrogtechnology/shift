@@ -66,6 +66,7 @@ func Consume(deploy func([]byte)) {
 	failOnError(err, "Failed to register a consumer")
 
 	for msg := range msgs {
+		fmt.Println(string(msg.Body))
 		deploy(msg.Body)
 	}
 }
