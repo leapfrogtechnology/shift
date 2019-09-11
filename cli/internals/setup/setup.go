@@ -25,16 +25,18 @@ type deploymentDetails struct {
 }
 
 type deployment struct {
-	Name         string `json:"name"`
-	Platform     string `json:"platform"`
-	AccessKey    string `json:"accessKey"`
-	SecretKey    string `json:"secretKey"`
-	Type         string `json:"type"`
-	GitProvider  string `json:"gitProvider"`
-	GitToken     string `json:"gitToken"`
-	CloneURL     string `json:"cloneURL"`
-	BuildCommand string `json:"buildCommand"`
-	DistFolder   string `json:"distFolder"`
+	Name            string `json:"name"`
+	Platform        string `json:"platform"`
+	AccessKey       string `json:"accessKey"`
+	SecretKey       string `json:"secretKey"`
+	Type            string `json:"type"`
+	GitProvider     string `json:"gitProvider"`
+	GitToken        string `json:"gitToken"`
+	CloneURL        string `json:"cloneURL"`
+	BuildCommand    string `json:"buildCommand"`
+	DistFolder      string `json:"distFolder"`
+	Port            string `json:"port"`
+	HealthCheckPath string `json:"healthCheckPath"`
 }
 
 type projectRequest struct {
@@ -42,9 +44,14 @@ type projectRequest struct {
 	Deployment  deployment `json:"deployment"`
 }
 
-type buildInformation struct {
+type frontendBuildInformation struct {
 	BuildCommand string
 	DistFolder   string
+}
+
+type backendBuildInformation struct {
+	Port            string
+	HealthCheckPath string
 }
 
 func askProjectDetails() *projectDetails {
@@ -195,7 +202,7 @@ func chooseRepo(personalToken string, organization string) (string, string) {
 	return org, repoURL[org]
 }
 
-func askBuildInformation() *buildInformation {
+func askFrontendBuildInformation() *frontendBuildInformation {
 	questions := []*survey.Question{
 		{
 			Name: "buildCommand",
@@ -211,7 +218,34 @@ func askBuildInformation() *buildInformation {
 		},
 	}
 
-	answers := &buildInformation{}
+	answers := &frontendBuildInformation{}
+	err := survey.Ask(questions, answers)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return answers
+}
+
+func askBackendBuildInformation() *backendBuildInformation {
+	questions := []*survey.Question{
+		{
+			Name: "port",
+			Prompt: &survey.Input{
+				Message: "Application Port: ",
+			},
+		},
+		{
+			Name: "healthCheckPath",
+			Prompt: &survey.Input{
+				Message: "Healthcheck Path (eg: '/api'): ",
+			},
+		},
+	}
+
+	answers := &backendBuildInformation{}
+
 	err := survey.Ask(questions, answers)
 
 	if err != nil {
@@ -234,21 +268,31 @@ func Run() {
 	organization := chooseOrganization(personalToken)
 	_, repoURL := chooseRepo(personalToken, organization)
 
-	buildInformation := askBuildInformation()
+	frontendBuildInformation := &frontendBuildInformation{}
+
+	backendBuildInformation := &backendBuildInformation{}
+
+	if deploymentDetails.DeploymentType == "Frontend" {
+		frontendBuildInformation = askFrontendBuildInformation()
+	} else if deploymentDetails.DeploymentType == "Backend" {
+		backendBuildInformation = askBackendBuildInformation()
+	}
 
 	projectRequest := projectRequest{
 		ProjectName: projectDetails.ProjectName,
 		Deployment: deployment{
-			Name:         deploymentDetails.DeploymentName,
-			Platform:     deploymentDetails.CloudProvider,
-			AccessKey:    deploymentDetails.AccessKey,
-			SecretKey:    deploymentDetails.SecretKey,
-			Type:         deploymentDetails.DeploymentType,
-			GitProvider:  deploymentDetails.GitProvider,
-			GitToken:     personalToken,
-			CloneURL:     repoURL,
-			BuildCommand: buildInformation.BuildCommand,
-			DistFolder:   buildInformation.DistFolder,
+			Name:            deploymentDetails.DeploymentName,
+			Platform:        deploymentDetails.CloudProvider,
+			AccessKey:       deploymentDetails.AccessKey,
+			SecretKey:       deploymentDetails.SecretKey,
+			Type:            deploymentDetails.DeploymentType,
+			GitProvider:     deploymentDetails.GitProvider,
+			GitToken:        personalToken,
+			CloneURL:        repoURL,
+			BuildCommand:    frontendBuildInformation.BuildCommand,
+			DistFolder:      frontendBuildInformation.DistFolder,
+			Port:            backendBuildInformation.Port,
+			HealthCheckPath: backendBuildInformation.HealthCheckPath,
 		},
 	}
 
