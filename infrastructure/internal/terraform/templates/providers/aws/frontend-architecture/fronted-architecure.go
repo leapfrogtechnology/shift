@@ -119,11 +119,11 @@ resource "aws_cloudfront_distribution" "www_distribution" {
 
 // Outputs
 
-output "bucket_name" {
+output "bucketName" {
   value = aws_s3_bucket.bucket.bucket
 }
 
-output "frontend_web_url" {
+output "appUrl" {
   value = aws_cloudfront_distribution.www_distribution.domain_name
 }
 `

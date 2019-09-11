@@ -1,5 +1,11 @@
-package backend_ha_architecture
+package main
 
+import (
+	"encoding/json"
+	"github.com/flosch/pongo2"
+	"io/ioutil"
+	"os"
+)
 const InfrastructureTemplate = `
 // Terraform State Backend Initialization
 terraform {
@@ -18,7 +24,7 @@ variable "az_count" {
   default = "2"
 }
 
-variable "cidr_block" {
+variable "cird_block" {
   default = "172.22.0.0/16"
 }
 
@@ -54,7 +60,7 @@ provider "aws" {
 data "aws_availability_zones" "available" {}
 
 resource "aws_vpc" "main" {
-  cidr_block = var.cidr_block
+  cidr_block = var.cird_block
   tags = var.tags
 }
 
@@ -227,7 +233,7 @@ variable "fargate_container_port" {
 
 variable "ecr_name" {
   type = "string"
-  default = "{{ info.Client.Deployment|lower }}"
+  default = "{{ info.Client.Project|lower }}/{{ info.Client.Deployment.Name|lower }}-backend"
 }
 
 resource "aws_iam_role" "ECSAutoScalingRole" {
@@ -395,6 +401,7 @@ resource "aws_ecr_repository" "repo" {
   tags = var.tags
 }
 
+
 output "repoUrl" {
   value = aws_ecr_repository.repo.repository_url
 }
@@ -404,7 +411,7 @@ output "backendServiceId" {
 }
 
 output "backendClusterName" {
-  value = var.fargate.cluster_name
+  value = var.fargate_cluster_name
 }
 
 output "backendTaskDefinitionId" {
@@ -415,7 +422,7 @@ output "backendContainerDefinition" {
   value = module.fargate.fargate_container_definition
 }
 
-output "appUrl" {
+output "backendUrl" {
   value = aws_alb.main.dns_name
 }
 `
@@ -452,3 +459,60 @@ const ContainerTemplate  = `[
         }
     }
 ]`
+
+
+type deployment struct {
+	Name            string `json:"name"`
+	Platform        string `json:"platform"`
+	AccessKey       string `json:"accessKey"`
+	SecretKey       string `json:"secretKey"`
+	Type            string `json:"type"`
+	GitProvider     string `json:"gitProvider"`
+	GitToken        string `json:"gitToken"`
+	CloneUrl        string `json:"cloneUrl"`
+	BuildCommand    string `json:"buildCommand"`
+	DistFolder      string `json:"distFolder"`
+	Port            string `json:"port"`
+	HealthCheckPath string `json:"healthCheckPath"`
+}
+type Client struct {
+	Project    string     `json:"projectName"`
+	Deployment deployment `json:"deployment"`
+}
+
+type Infrastructure struct {
+	Client Client
+	Token  string
+}
+
+func main() {
+	body := `{"projectName":"Shift","deployment":{"name":"Shift","platform":"AWS","accessKey":"jpt","secretKey":"jpt","type":"Backend","gitProvider":"Github","gitToken":"50m320734","cloneUrl":"https://github.com/leapfrogtechnology/shift.git","buildCommand":"someBuildCommand","distFolder":"build", "port": "80", "healthCheckPath": "/"}}`
+	token := os.Getenv("TERRAFORM_TOKEN")
+	var client Client
+	err := json.Unmarshal([]byte(body), &client)
+	if err != nil {
+		panic(err)
+	}
+	infrastructure := Infrastructure{
+		Client: client,
+		Token:  token,
+	}
+	terraformPath := "/tmp/shift/test"
+	templateJsonFile := terraformPath + "/sample.json.tpl"
+	terraformFileName := terraformPath + "/infrastructure.tf"
+
+	err = os.MkdirAll(terraformPath, 0700)
+	if err != nil {
+		panic(err)
+	}
+	_ = ioutil.WriteFile(templateJsonFile,[]byte(ContainerTemplate), 0600)
+	tpl, err := pongo2.FromString(InfrastructureTemplate)
+	if err != nil {
+		panic(err)
+	}
+	out, err := tpl.Execute(pongo2.Context{"info": infrastructure})
+	err = ioutil.WriteFile(terraformFileName, []byte(out), 0600)
+	if err != nil {
+		panic(err)
+	}
+}
