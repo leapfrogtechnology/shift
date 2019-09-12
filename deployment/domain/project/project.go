@@ -12,6 +12,7 @@ type deployment struct {
 	BuildCommand string `json:"buildCommand"`
 	DistFolder   string `json:"distFolder"`
 	Bucket       string `json:"bucket"`
+	SlackURL     string `json:"slackURL"`
 }
 
 type terraformOutput struct {
@@ -36,4 +37,5 @@ type Response struct {
 type TriggerRequest struct {
 	Project    string `json:"project"`
 	Deployment string `json:"deployment"`
+	User       string `json:"user"`
 }

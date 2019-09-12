@@ -10,6 +10,7 @@ import (
 	"github.com/leapfrogtechnology/shift/deployment/services/mq/deployment"
 	"github.com/leapfrogtechnology/shift/deployment/services/mq/trigger"
 	"github.com/leapfrogtechnology/shift/deployment/services/storage"
+	"github.com/leapfrogtechnology/shift/deployment/utils/slack"
 )
 
 func deploy(msg []byte) {
@@ -26,7 +27,20 @@ func deploy(msg []byte) {
 		SecretKey:    projectResponse.Deployment.SecretKey,
 	}
 
-	frontend.Build(buildData)
+	error := frontend.Build(buildData)
+
+	if error != nil {
+		slack.Notify(
+			projectResponse.Deployment.SlackURL,
+			fmt.Sprintf(
+				"Error: Deployment of *%s* *%s* failed. \n %s",
+				projectResponse.ProjectName,
+				projectResponse.Deployment.Name,
+				error.Error()),
+			"#FF6871")
+
+		return
+	}
 
 	s3.Deploy(s3.Data{
 		AccessKey:  projectResponse.Deployment.AccessKey,
@@ -37,6 +51,15 @@ func deploy(msg []byte) {
 	})
 
 	storage.Save(projectResponse)
+
+	slack.Notify(
+		projectResponse.Deployment.SlackURL,
+		fmt.Sprintf(
+			"Successfull deploy of *%s* *%s* \n %s",
+			projectResponse.ProjectName,
+			projectResponse.Deployment.Name,
+			projectResponse.Data.FrontendWebURL.Value),
+		"#04EBB8")
 }
 
 func triggerDeploy(msg []byte) {
@@ -48,6 +71,15 @@ func triggerDeploy(msg []byte) {
 	deploymentData := jsonData[triggerRequest.Project][triggerRequest.Deployment]
 
 	if _, ok := jsonData[triggerRequest.Project][triggerRequest.Deployment]; ok {
+		slack.Notify(
+			deploymentData.Deployment.SlackURL,
+			fmt.Sprintf(
+				"*There is a new deployment in progress.* \n Project: `%s` \n Deployment: `%s` \n Started by: `%s`",
+				deploymentData.ProjectName,
+				deploymentData.Deployment.Name,
+				triggerRequest.User),
+			"#1CA7FB")
+
 		deploymentDataJSON, _ := json.Marshal(deploymentData)
 
 		deployment.Publish(deploymentDataJSON)

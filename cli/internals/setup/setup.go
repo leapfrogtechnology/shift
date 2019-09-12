@@ -37,6 +37,7 @@ type deployment struct {
 	DistFolder      string `json:"distFolder"`
 	Port            string `json:"port"`
 	HealthCheckPath string `json:"healthCheckPath"`
+	SlackURL        string `json:"slackURL"`
 }
 
 type projectRequest struct {
@@ -255,6 +256,16 @@ func askBackendBuildInformation() *backendBuildInformation {
 	return answers
 }
 
+func askSlackEndpoint() string {
+	slackEndpoint := ""
+	prompt := &survey.Input{
+		Message: "Slack webhook URL: ",
+	}
+	survey.AskOne(prompt, &slackEndpoint)
+
+	return slackEndpoint
+}
+
 // Run initializes setup for shift projects.
 func Run() {
 	projectDetails := askProjectDetails()
@@ -278,6 +289,8 @@ func Run() {
 		backendBuildInformation = askBackendBuildInformation()
 	}
 
+	slackEndpoint := askSlackEndpoint()
+
 	projectRequest := projectRequest{
 		ProjectName: projectDetails.ProjectName,
 		Deployment: deployment{
@@ -293,6 +306,7 @@ func Run() {
 			DistFolder:      frontendBuildInformation.DistFolder,
 			Port:            backendBuildInformation.Port,
 			HealthCheckPath: backendBuildInformation.HealthCheckPath,
+			SlackURL:        slackEndpoint,
 		},
 	}
 
