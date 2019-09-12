@@ -13,6 +13,7 @@ type deployment struct {
 	DistFolder      string `json:"distFolder"`
 	Port            string `json:"port"`
 	HealthCheckPath string `json:"healthCheckPath"`
+	SlackURL        string `json:"slackURL"`
 }
 type Client struct {
 	Project    string     `json:"projectName"`
