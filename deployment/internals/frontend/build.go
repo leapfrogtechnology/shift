@@ -19,12 +19,14 @@ type BuildData struct {
 }
 
 // Build executes build command
-func Build(data BuildData) {
+func Build(data BuildData) error {
 	spinner.Start("")
 	defer spinner.Stop()
 
 	fmt.Println(data.CloneURL)
 	cloneURL := "https://" + data.GitToken + "@" + data.CloneURL[8:]
 
-	shell.Execute("export AWS_ACCESS_KEY_ID=" + data.AccessKey + " && export AWS_SECRET_ACCESS_KEY=" + data.SecretKey + " && cd /tmp && rm -rf artifact && mkdir artifact && cd artifact &&" + "git clone " + cloneURL + " source && cd source && " + data.BuildCommand)
+	err := shell.Execute("export AWS_ACCESS_KEY_ID=" + data.AccessKey + " && export AWS_SECRET_ACCESS_KEY=" + data.SecretKey + " && cd /tmp && rm -rf artifact && mkdir artifact && cd artifact &&" + "git clone " + cloneURL + " source && cd source && " + data.BuildCommand)
+
+	return err
 }

@@ -27,7 +27,20 @@ func deploy(msg []byte) {
 		SecretKey:    projectResponse.Deployment.SecretKey,
 	}
 
-	frontend.Build(buildData)
+	error := frontend.Build(buildData)
+
+	if error != nil {
+		slack.Notify(
+			projectResponse.Deployment.SlackURL,
+			fmt.Sprintf(
+				"Error: Deployment of *%s* *%s* failed. \n %s",
+				projectResponse.ProjectName,
+				projectResponse.Deployment.Name,
+				error.Error()),
+			"#FF6871")
+
+		return
+	}
 
 	s3.Deploy(s3.Data{
 		AccessKey:  projectResponse.Deployment.AccessKey,
@@ -56,8 +69,6 @@ func triggerDeploy(msg []byte) {
 	jsonData := storage.Read()
 
 	deploymentData := jsonData[triggerRequest.Project][triggerRequest.Deployment]
-
-	fmt.Println(deploymentData)
 
 	if _, ok := jsonData[triggerRequest.Project][triggerRequest.Deployment]; ok {
 		slack.Notify(
