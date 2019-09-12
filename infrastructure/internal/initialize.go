@@ -20,7 +20,7 @@ func Initialize() {
 	go func() {
 		for message := range messages {
 			log.Printf("Received a message: %s", message.MessageId)
-			infrastructureInfo, err := infrastrucuture.InitializeFrontend(message.Body)
+			infrastructureInfo, err := infrastrucuture.Initialize(message.Body)
 			if err != nil {
 				logger.LogError(err, "Cannot Init Infrastructure")
 			} else {

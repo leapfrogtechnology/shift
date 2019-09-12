@@ -427,6 +427,7 @@ output "backendUrl" {
 }
 `
 
+
 const ContainerTemplate  = `[
     {
         "name": "${fargate_container_name}",

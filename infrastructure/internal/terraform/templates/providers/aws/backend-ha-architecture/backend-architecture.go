@@ -42,6 +42,10 @@ variable "health_check_path" {
   default = "{{ info.Client.Deployment.HealthCheckPath }}"
 }
 
+variable "repo_name" {
+  type = "string"
+  default = "leapfrogtechnology/shift-ui"
+}
 
 // Provider Initialization
 provider "aws" {
@@ -227,7 +231,7 @@ variable "fargate_container_port" {
 
 variable "ecr_name" {
   type = "string"
-  default = "{{ info.Client.Deployment|lower }}"
+  default = "{{ info.Client.Project|lower }}/{{ info.Client.Deployment.Name|lower }}-backend"
 }
 
 resource "aws_iam_role" "ECSAutoScalingRole" {
@@ -363,12 +367,17 @@ resource "aws_iam_role_policy_attachment" "attach-tasks-execution" {
   policy_arn = aws_iam_policy.ECSTasksExecutionPolicy.arn
 }
 
+variable "container_port" {
+  default = 80
+}
+
 data "template_file" "container_definition" {
   template = file("sample.json.tpl")
   vars = {
     fargate_container_name = var.fargate_cluster_name
     fargate_cluster_name = var.fargate_cluster_name
-    fargate_container_port = 80
+    fargate_container_port = var.container_port
+    repo_name = var.repo_name
   }
 }
 
@@ -404,7 +413,7 @@ output "backendServiceId" {
 }
 
 output "backendClusterName" {
-  value = var.fargate.cluster_name
+  value = var.fargate_cluster_name
 }
 
 output "backendTaskDefinitionId" {
@@ -418,12 +427,13 @@ output "backendContainerDefinition" {
 output "appUrl" {
   value = aws_alb.main.dns_name
 }
+// Template
 `
 
 const ContainerTemplate  = `[
     {
         "name": "${fargate_container_name}",
-        "image": "leapfrogtechnology/shift-ui",
+        "image": "${repo_name}",
         "cpu": 0,
         "memoryReservation": 256,
         "portMappings": [
