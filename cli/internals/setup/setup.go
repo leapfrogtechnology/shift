@@ -248,7 +248,7 @@ func askBackendBuildInformation() *backendBuildInformation {
 		{
 			Name: "dockerfilePath",
 			Prompt: &survey.Input{
-				Message: "Dockerfile Path (eg: '/server'): ",
+				Message: "Dockerfile Path (eg: './'): ",
 			},
 		},
 	}
