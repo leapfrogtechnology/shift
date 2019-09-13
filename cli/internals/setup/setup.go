@@ -38,6 +38,7 @@ type deployment struct {
 	Port            string `json:"port"`
 	HealthCheckPath string `json:"healthCheckPath"`
 	SlackURL        string `json:"slackURL"`
+	DockerFilePath  string `json:"dockerFilePath"`
 }
 
 type projectRequest struct {
@@ -53,6 +54,7 @@ type frontendBuildInformation struct {
 type backendBuildInformation struct {
 	Port            string
 	HealthCheckPath string
+	DockerfilePath  string
 }
 
 func askProjectDetails() *projectDetails {
@@ -243,6 +245,12 @@ func askBackendBuildInformation() *backendBuildInformation {
 				Message: "Healthcheck Path (eg: '/api'): ",
 			},
 		},
+		{
+			Name: "dockerfilePath",
+			Prompt: &survey.Input{
+				Message: "Dockerfile Path (eg: './'): ",
+			},
+		},
 	}
 
 	answers := &backendBuildInformation{}
@@ -307,6 +315,7 @@ func Run() {
 			Port:            backendBuildInformation.Port,
 			HealthCheckPath: backendBuildInformation.HealthCheckPath,
 			SlackURL:        slackEndpoint,
+			DockerFilePath:  backendBuildInformation.DockerfilePath,
 		},
 	}
 
