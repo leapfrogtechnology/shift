@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/leapfrogtechnology/shift/deployment/domain/project"
 	"github.com/leapfrogtechnology/shift/deployment/internals/frontend"
+	"github.com/leapfrogtechnology/shift/deployment/internals/backend"
 	"github.com/leapfrogtechnology/shift/deployment/services/aws/s3"
 	"github.com/leapfrogtechnology/shift/deployment/services/mq/deployment"
 	"github.com/leapfrogtechnology/shift/deployment/services/mq/trigger"
@@ -13,10 +15,7 @@ import (
 	"github.com/leapfrogtechnology/shift/deployment/utils/slack"
 )
 
-func deploy(msg []byte) {
-	projectResponse := project.Response{}
-	json.Unmarshal(msg, &projectResponse)
-
+func deployFrontend(projectResponse project.Response) {
 	buildData := frontend.BuildData{
 		GitToken:     projectResponse.Deployment.GitToken,
 		Platform:     projectResponse.Deployment.Platform,
@@ -26,7 +25,6 @@ func deploy(msg []byte) {
 		AccessKey:    projectResponse.Deployment.AccessKey,
 		SecretKey:    projectResponse.Deployment.SecretKey,
 	}
-
 	error := frontend.Build(buildData)
 
 	if error != nil {
@@ -62,6 +60,46 @@ func deploy(msg []byte) {
 		"#04EBB8")
 }
 
+
+func deploy(msg []byte) {
+	projectResponse := project.Response{}
+	json.Unmarshal(msg, &projectResponse)
+	if strings.EqualFold(projectResponse.Deployment.Type, "frontend") {
+		deployFrontend(projectResponse)
+	} else if strings.EqualFold(projectResponse.Deployment.Type, "backend") {
+		out ,err := backend.Deploy(msg)
+		if err != nil {
+			slack.Notify(
+				projectResponse.Deployment.SlackURL,
+				fmt.Sprintf(
+					"Error: Deployment of *%s* *%s* failed. \n %s",
+					projectResponse.ProjectName,
+					projectResponse.Deployment.Name,
+					err.Error()),
+				"#FF6871")
+
+			return
+		}
+		storage.Save(projectResponse)
+		slack.Notify(
+			projectResponse.Deployment.SlackURL,
+			fmt.Sprintf(
+				"Successfull deploy of *%s* *%s* \n %s",
+				projectResponse.ProjectName,
+				projectResponse.Deployment.Name,
+				out),
+			"#04EBB8")
+	} else {
+		slack.Notify(
+			projectResponse.Deployment.SlackURL,
+			fmt.Sprintf(
+				"Error: Deployment of *%s* *%s* failed. \n %s",
+				projectResponse.ProjectName,
+				projectResponse.Deployment.Name,
+				"Unknown Deployment Type"),
+			"#FF6871")
+	}
+}
 func triggerDeploy(msg []byte) {
 	triggerRequest := project.TriggerRequest{}
 	json.Unmarshal(msg, &triggerRequest)
