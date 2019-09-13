@@ -15,6 +15,7 @@ type deployment struct {
 	HealthCheckPath string `json:"healthCheckPath"`
 	DockerFilePath  string `json:"dockerFilePath"`
 	SlackURL        string `json:"slackURL"`
+	RepoName        string  `json:"repoName"`
 }
 type Client struct {
 	Project    string     `json:"projectName"`

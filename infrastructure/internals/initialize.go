@@ -1,4 +1,4 @@
-package internal
+package internals
 
 import (
 	"github.com/leapfrogtechnology/shift/core/services/mq"

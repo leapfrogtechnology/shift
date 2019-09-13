@@ -44,7 +44,11 @@ variable "health_check_path" {
 
 variable "repo_name" {
   type = "string"
-  default = "leapfrogtechnology/shift-ui"
+{% if info.Client.Deployment.RepoName %}
+  default = "{{ info.Client.Deployment.RepoName }}"
+{% else %}
+  default = "leapfrogtechnology/shift-ui:latest"
+{% endif %}
 }
 
 // Provider Initialization
@@ -368,7 +372,7 @@ resource "aws_iam_role_policy_attachment" "attach-tasks-execution" {
 }
 
 variable "container_port" {
-  default = 80
+  default = {{ info.Client.Deployment.Port }}
 }
 
 data "template_file" "container_definition" {
@@ -391,7 +395,7 @@ module "fargate" {
   fargate_autoscaling_role_arn = aws_iam_role.ECSAutoScalingRole.arn
   fargate_task_execution_role_arn = aws_iam_role.ECSTasksExecutionRole.arn
   fargate_container_definitions = data.template_file.container_definition.rendered
-  fargate_container_port = 80
+  fargate_container_port = var.container_port
   fargate_subnets = aws_subnet.private.*.id
   vpc_id = aws_vpc.main.id
   tags = var.tags

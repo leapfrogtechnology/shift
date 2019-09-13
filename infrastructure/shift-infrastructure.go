@@ -1,7 +1,7 @@
 package main
 
-import "github.com/leapfrogtechnology/shift/infrastructure/internal"
+import "github.com/leapfrogtechnology/shift/infrastructure/internals"
 
 func main() {
-	internal.Initialize()
+	internals.Initialize()
 }
