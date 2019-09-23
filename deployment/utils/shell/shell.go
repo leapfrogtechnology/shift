@@ -1,6 +1,9 @@
 package shell
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 )
@@ -9,10 +12,19 @@ import (
 func Execute(command string) error {
 	cmd := exec.Command("bash", "-c", command)
 
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+
+	cmd.Stderr = &stderr
+	cmd.Stdout = &out
+
 	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 
 	err := cmd.Run()
 
-	return err
+	if err != nil {
+		return errors.New(fmt.Sprint(err) + ":- " + stderr.String())
+	}
+
+	return nil
 }
