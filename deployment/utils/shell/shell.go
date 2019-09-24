@@ -23,6 +23,7 @@ func Execute(command string) error {
 	err := cmd.Run()
 
 	if err != nil {
+		fmt.Println("ERROR :" + stderr.String())
 		return errors.New(fmt.Sprint(err) + ":- " + stderr.String())
 	}
 
