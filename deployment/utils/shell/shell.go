@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+
+	"github.com/leapfrogtechnology/shift/deployment/utils/escape"
 )
 
 // Execute runs the process with the supplied environment.
@@ -21,11 +23,12 @@ func Execute(command string) error {
 	cmd.Stdout = os.Stdout
 
 	err := cmd.Run()
-
 	if err != nil {
-		fmt.Println("ERROR :" + stderr.String())
-		return errors.New(fmt.Sprint(err) + ":- " + stderr.String())
-	}
+		fmt.Println(stderr.String())
 
+		errorMessage := escape.Strip(err.Error() + " :- " + stderr.String())
+
+		return errors.New(errorMessage)
+	}
 	return nil
 }
