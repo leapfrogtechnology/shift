@@ -24,6 +24,7 @@
 # Built Go Packages
 shift
 shift-infrastructure
+deploy
 
 # Configfiles
 config.json

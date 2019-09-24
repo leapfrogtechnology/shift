@@ -1,18 +1,21 @@
 package project
 
 type deployment struct {
-	Name         string `json:"name"`
-	Platform     string `json:"platform"`
-	AccessKey    string `json:"accessKey"`
-	SecretKey    string `json:"secretKey"`
-	Type         string `json:"type"`
-	GitProvider  string `json:"gitProvider"`
-	GitToken     string `json:"gitToken"`
-	CloneURL     string `json:"cloneURL"`
-	BuildCommand string `json:"buildCommand"`
-	DistFolder   string `json:"distFolder"`
-	Bucket       string `json:"bucket"`
-	SlackURL     string `json:"slackURL"`
+	Name            string `json:"name"`
+	Platform        string `json:"platform"`
+	AccessKey       string `json:"accessKey"`
+	SecretKey       string `json:"secretKey"`
+	Type            string `json:"type"`
+	GitProvider     string `json:"gitProvider"`
+	GitToken        string `json:"gitToken"`
+	CloneURL        string `json:"cloneUrl"`
+	BuildCommand    string `json:"buildCommand"`
+	DistFolder      string `json:"distFolder"`
+	Port            string `json:"port"`
+	HealthCheckPath string `json:"healthCheckPath"`
+	DockerFilePath  string `json:"dockerFilePath"`
+	SlackURL        string `json:"slackURL"`
+	RepoName        string `json:"repoName"`
 }
 
 type terraformOutput struct {
@@ -22,8 +25,13 @@ type terraformOutput struct {
 }
 
 type infrastructure struct {
-	BucketName     terraformOutput `json:"bucketName"`
-	FrontendWebURL terraformOutput `json:"appUrl"`
+	BucketName                 terraformOutput `json:"bucketName"`
+	FrontendWebURL             terraformOutput `json:"appUrl"`
+	BackendClusterName         terraformOutput `json:"backendClusterName"`
+	BackendContainerDefinition terraformOutput `json:"backendContainerDefinition"`
+	BackendServiceId           terraformOutput `json:"backendServiceId"`
+	BackendTaskDefinitionId    terraformOutput `json:"backendTaskDefinitionId"`
+	RepoUrl                    terraformOutput `json:"repoUrl"`
 }
 
 // Response defines the response from message queue.
