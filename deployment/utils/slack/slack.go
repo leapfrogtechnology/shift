@@ -14,10 +14,8 @@ func Notify(url string, text string, color string) {
 
 	content := fmt.Sprintf(`{"attachments": [{"text": %q, "color": "%s"}]}`, "```"+message+"```", color)
 
-	resp, _ := http.Client.R().
+	http.Client.R().
 		SetHeader("Content-Type", "application/json").
 		SetBody([]byte(content)).
 		Post(url)
-
-	fmt.Println("Slack Hook:- " + resp.String())
 }
