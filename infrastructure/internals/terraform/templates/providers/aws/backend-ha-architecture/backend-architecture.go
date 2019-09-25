@@ -61,6 +61,9 @@ provider "aws" {
 # Fetch AZ in current Region
 data "aws_availability_zones" "available" {}
 
+data "aws_acm_certificate" "cert" {
+  domain = "*.shift.lftechnology.com"
+}
 resource "aws_vpc" "main" {
   cidr_block = var.cidr_block
   tags = var.tags
@@ -198,27 +201,40 @@ resource "aws_alb_target_group" "app" {
 }
 
 # Redirect all traffic from the ALB to the target group
-//resource "aws_alb_listener" "my_website_https" {
-//  load_balancer_arn = aws_alb.main.id
-//  port = "443"
-//  protocol = "HTTPS"
-//  ssl_policy = "ELBSecurityPolicy-2016-08"
-//  certificate_arn = var.aws_acm_certificate_arn
-//  //  tags        = var.tags
-//  default_action {
-//    type = "forward"
-//    target_group_arn = aws_alb_target_group.app.id
-//  }
-//}
+resource "aws_alb_listener" "my_website_https" {
+ load_balancer_arn = aws_alb.main.id
+ port = "443"
+ protocol = "HTTPS"
+ ssl_policy = "ELBSecurityPolicy-2016-08"
+ certificate_arn = data.aws_acm_certificate.cert.arn
+ //  tags        = var.tags
+ default_action {
+   type = "forward"
+   target_group_arn = aws_alb_target_group.app.id
+ }
+}
 
 
 resource "aws_lb_listener" "my_website_http" {
   load_balancer_arn = aws_alb.main.id
   port = "80"
   protocol = "HTTP"
-  default_action {
-    type = "forward"
-    target_group_arn = aws_alb_target_group.app.id
+  //default_action {
+  //  type = "forward"
+  //  target_group_arn = aws_alb_target_group.app.id
+  //}
+    default_action {
+      type = "redirect"
+      target_group_arn = aws_alb_target_group.app.id
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+      host = "#{host}"
+      path = "/#{path}"
+      query = "#{query}"
+    }
   }
 }
 //Fargate
@@ -434,7 +450,7 @@ output "appUrl" {
 // Template
 `
 
-const ContainerTemplate  = `[
+const ContainerTemplate = `[
     {
         "name": "${fargate_container_name}",
         "image": "${repo_name}",
