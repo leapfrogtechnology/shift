@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/leapfrogtechnology/shift/deployment/domain/project"
-	"github.com/leapfrogtechnology/shift/deployment/internals/frontend"
 	"github.com/leapfrogtechnology/shift/deployment/internals/backend"
+	"github.com/leapfrogtechnology/shift/deployment/internals/frontend"
 	"github.com/leapfrogtechnology/shift/deployment/services/aws/s3"
 	"github.com/leapfrogtechnology/shift/deployment/services/mq/deployment"
 	"github.com/leapfrogtechnology/shift/deployment/services/mq/trigger"
@@ -34,7 +34,7 @@ func deployFrontend(projectResponse project.Response) {
 				"Error: Deployment of *%s* *%s* failed. \n %s",
 				projectResponse.ProjectName,
 				projectResponse.Deployment.Name,
-				error.Error()),
+				"```"+error.Error()+"```"),
 			"#FF6871")
 
 		return
@@ -60,14 +60,13 @@ func deployFrontend(projectResponse project.Response) {
 		"#04EBB8")
 }
 
-
 func deploy(msg []byte) {
 	projectResponse := project.Response{}
 	json.Unmarshal(msg, &projectResponse)
 	if strings.EqualFold(projectResponse.Deployment.Type, "frontend") {
 		deployFrontend(projectResponse)
 	} else if strings.EqualFold(projectResponse.Deployment.Type, "backend") {
-		out ,err := backend.Deploy(msg)
+		out, err := backend.Deploy(msg)
 		if err != nil {
 			slack.Notify(
 				projectResponse.Deployment.SlackURL,
@@ -75,7 +74,7 @@ func deploy(msg []byte) {
 					"Error: Deployment of *%s* *%s* failed. \n %s",
 					projectResponse.ProjectName,
 					projectResponse.Deployment.Name,
-					err.Error()),
+					"```"+err.Error()+"```"),
 				"#FF6871")
 
 			return

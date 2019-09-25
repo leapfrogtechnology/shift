@@ -12,7 +12,7 @@ func Notify(url string, text string, color string) {
 
 	message := strings.Replace(text, "\"", "'", -1)
 
-	content := fmt.Sprintf(`{"attachments": [{"text": %q, "color": "%s"}]}`, "```"+message+"```", color)
+	content := fmt.Sprintf(`{"attachments": [{"text": %q, "color": "%s"}]}`, message, color)
 
 	http.Client.R().
 		SetHeader("Content-Type", "application/json").
