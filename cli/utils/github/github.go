@@ -20,6 +20,7 @@ var userReposURL = baseURL + "/user/repos?affiliation=owner&per_page=1000"
 type GitCredentials struct {
 	Username string
 	Password string
+	MfaToken string
 }
 
 type createPersonalTokenBody struct {
@@ -55,11 +56,21 @@ func CreatePersonalToken(credentials *GitCredentials) (string, error) {
 	jsonData, _ := json.Marshal(data)
 
 	response := &personalTokenSuccess{}
-	_, err := http.Client.R().
-		SetHeader("Authorization", "basic "+basicAuthString).
-		SetBody(jsonData).
-		SetResult(response).
-		Post(createTokenURL)
+	var err error
+	if credentials.MfaToken != ""{
+		_, err = http.Client.R().
+			SetHeader("Authorization", "basic "+basicAuthString).
+			SetHeader("X-GitHub-OTP", credentials.MfaToken).
+			SetBody(jsonData).
+			SetResult(response).
+			Post(createTokenURL)
+	} else {
+		_, err = http.Client.R().
+			SetHeader("Authorization", "basic "+basicAuthString).
+			SetBody(jsonData).
+			SetResult(response).
+			Post(createTokenURL)
+	}
 
 	if err != nil {
 		fmt.Println(err)

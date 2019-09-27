@@ -145,6 +145,12 @@ func askGitCredentials(gitProvider string) *github.GitCredentials {
 				Message: "Password",
 			},
 		},
+		{
+			Name: "mfaToken",
+			Prompt: &survey.Input{
+				Message: "MfaToken",
+			},
+		},
 	}
 
 	answers := &github.GitCredentials{}
