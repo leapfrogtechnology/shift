@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/leapfrogtechnology/shift/cli/internals/deploy"
+	"github.com/leapfrogtechnology/shift/cli/internal/deploy"
 )
 
 // Deploy triggers deployment for provided project.

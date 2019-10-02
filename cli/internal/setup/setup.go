@@ -3,12 +3,8 @@ package setup
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/leapfrogtechnology/shift/cli/services/mq/infrastructure"
-	"github.com/leapfrogtechnology/shift/cli/utils/github"
-	"github.com/leapfrogtechnology/shift/cli/utils/spinner"
 )
 
 type projectDetails struct {
@@ -18,32 +14,7 @@ type projectDetails struct {
 type deploymentDetails struct {
 	DeploymentName string
 	CloudProvider  string
-	AccessKey      string
-	SecretKey      string
 	DeploymentType string
-	GitProvider    string
-}
-
-type deployment struct {
-	Name            string `json:"name"`
-	Platform        string `json:"platform"`
-	AccessKey       string `json:"accessKey"`
-	SecretKey       string `json:"secretKey"`
-	Type            string `json:"type"`
-	GitProvider     string `json:"gitProvider"`
-	GitToken        string `json:"gitToken"`
-	CloneURL        string `json:"cloneURL"`
-	BuildCommand    string `json:"buildCommand"`
-	DistFolder      string `json:"distFolder"`
-	Port            string `json:"port"`
-	HealthCheckPath string `json:"healthCheckPath"`
-	SlackURL        string `json:"slackURL"`
-	DockerFilePath  string `json:"dockerFilePath"`
-}
-
-type projectRequest struct {
-	ProjectName string     `json:"projectName"`
-	Deployment  deployment `json:"deployment"`
 }
 
 type frontendBuildInformation struct {
@@ -55,6 +26,24 @@ type backendBuildInformation struct {
 	Port            string
 	HealthCheckPath string
 	DockerfilePath  string
+}
+
+type deployment struct {
+	Name            string `json:"name"`
+	Platform        string `json:"platform"`
+	Type            string `json:"type"`
+	BuildCommand    string `json:"buildCommand"`
+	DistFolder      string `json:"distFolder"`
+	Port            string `json:"port"`
+	HealthCheckPath string `json:"healthCheckPath"`
+	SlackURL        string `json:"slackURL"`
+	DockerFilePath  string `json:"dockerFilePath"`
+}
+
+// Project defines the overall structure for a project deployment.
+type Project struct {
+	ProjectName string     `json:"projectName"`
+	Deployment  deployment `json:"deployment"`
 }
 
 func askProjectDetails() *projectDetails {
@@ -93,29 +82,10 @@ func askDeploymentDetails() *deploymentDetails {
 			},
 		},
 		{
-			Name: "accessKey",
-			Prompt: &survey.Input{
-				Message: "Access Key:",
-			},
-		},
-		{
-			Name: "secretKey",
-			Prompt: &survey.Input{
-				Message: "Secret Key:",
-			},
-		},
-		{
 			Name: "deploymentType",
 			Prompt: &survey.Select{
 				Message: "Choose Deployment Type:",
 				Options: []string{"Frontend", "Backend"},
-			},
-		},
-		{
-			Name: "gitProvider",
-			Prompt: &survey.Select{
-				Message: "Choose Git Provider",
-				Options: []string{"Github", "Gitlab", "BitBucket"},
 			},
 		},
 	}
@@ -128,87 +98,6 @@ func askDeploymentDetails() *deploymentDetails {
 	}
 
 	return answers
-}
-
-func askGitCredentials(gitProvider string) *github.GitCredentials {
-	fmt.Println("\n Connect " + gitProvider)
-	questions := []*survey.Question{
-		{
-			Name: "username",
-			Prompt: &survey.Input{
-				Message: "Username",
-			},
-		},
-		{
-			Name: "password",
-			Prompt: &survey.Password{
-				Message: "Password",
-			},
-		},
-		{
-			Name: "mfaToken",
-			Prompt: &survey.Input{
-				Message: "MfaToken",
-			},
-		},
-	}
-
-	answers := &github.GitCredentials{}
-	err := survey.Ask(questions, answers)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return answers
-}
-
-func chooseOrganization(personalToken string) string {
-	spinner.Start("Fetching your organizations...")
-	user, _ := github.FetchUser(personalToken)
-	organizations, _ := github.FetchOrganizations(personalToken)
-	spinner.Stop()
-
-	questions := &survey.Select{
-		Message: "Choose user/organization:",
-		Options: append(organizations, user+" (User)"),
-	}
-
-	org := ""
-	err := survey.AskOne(questions, &org)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return org
-}
-
-func chooseRepo(personalToken string, organization string) (string, string) {
-	repos := []string{}
-	repoURL := map[string]string{}
-
-	spinner.Start("Fetching your repositories...")
-	if strings.Contains(organization, "(User)") {
-		repos, repoURL, _ = github.FetchUserRepos(personalToken)
-	} else {
-		repos, repoURL, _ = github.FetchOrgRepos(personalToken, organization)
-	}
-	spinner.Stop()
-
-	questions := &survey.Select{
-		Message: "Choose Repository:",
-		Options: repos,
-	}
-
-	org := ""
-	err := survey.AskOne(questions, &org)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return org, repoURL[org]
 }
 
 func askFrontendBuildInformation() *frontendBuildInformation {
@@ -284,14 +173,6 @@ func askSlackEndpoint() string {
 func Run() {
 	projectDetails := askProjectDetails()
 	deploymentDetails := askDeploymentDetails()
-	gitCredentials := askGitCredentials(deploymentDetails.GitProvider)
-
-	spinner.Start("Connecting to Github...")
-	personalToken, _ := github.CreatePersonalToken(gitCredentials)
-	spinner.Stop()
-
-	organization := chooseOrganization(personalToken)
-	_, repoURL := chooseRepo(personalToken, organization)
 
 	frontendBuildInformation := &frontendBuildInformation{}
 
@@ -305,17 +186,12 @@ func Run() {
 
 	slackEndpoint := askSlackEndpoint()
 
-	projectRequest := projectRequest{
+	projectRequest := Project{
 		ProjectName: projectDetails.ProjectName,
 		Deployment: deployment{
 			Name:            deploymentDetails.DeploymentName,
 			Platform:        deploymentDetails.CloudProvider,
-			AccessKey:       deploymentDetails.AccessKey,
-			SecretKey:       deploymentDetails.SecretKey,
 			Type:            deploymentDetails.DeploymentType,
-			GitProvider:     deploymentDetails.GitProvider,
-			GitToken:        personalToken,
-			CloneURL:        repoURL,
 			BuildCommand:    frontendBuildInformation.BuildCommand,
 			DistFolder:      frontendBuildInformation.DistFolder,
 			Port:            backendBuildInformation.Port,
@@ -329,5 +205,9 @@ func Run() {
 
 	fmt.Println(string(projectRequestJSON))
 
-	infrastructure.Publish(projectRequestJSON)
+	// 1. Save json code here.
+
+	// 2. Run infrastructre code here and save to JSON again
+
+	// 3. Deploy to infrastructure code here.
 }
