@@ -1,7 +1,8 @@
-package main
+package infrastructure
 
 import "github.com/leapfrogtechnology/shift/infrastructure/internals"
 
-func main() {
-	internals.Initialize()
+func Initialize(details string) (string, error) {
+	infrastructureInfo, err := internals.Initialize(details)
+	return infrastructureInfo, err
 }

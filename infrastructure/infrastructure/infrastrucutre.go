@@ -114,37 +114,5 @@ func InitializeBackend(ClientArgs []byte) (string, error) {
 	}
 	logger.LogOutput(string(out))
 
-	// Deployment
-
-	//runErr := backend.Deploy(out)
-	//if runErr != nil {
-	//	logger.LogError(runErr, "Could not Deploy the changes")
-	//} else {
-	//	logger.LogOutput("Successfully deployed")
-	//}
-	//s := spinner.New(spinner.CharSets[11], 100*time.Millisecond) // Build our new spinner
-	//s.Prefix = "  "
-	//s.Suffix = "  Deploying"
-	//_ = s.Color("cyan", "bold")
-	//s.Start()
-	//region := "us-east-1"
-	//cloneUrl := "https://" + result.Deployment.GitToken + "@" + result.Deployment.CloneUrl[8:]
-	//command := fmt.Sprintf("rm -rf code && git clone %s code && $(AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s aws ecr get-login --no-include-email --region %s) && docker build/%s code -t %s && docker push %s && terraform apply -var repo_url=%s -var port=%s --auto-approve", cloneUrl, result.Deployment.AccessKey, result.Deployment.SecretKey, region, result.Deployment.DockerFilePath,result.Data.RepoUrl.Value, result.Data.RepoUrl.Value, result.Data.RepoUrl.Value, result.Deployment.Port)
-	//logger.LogInfo(command)
-	//cmd := exec.Command("bash", "-c", command)
-	//cmd.Dir = workspaceDir
-	//var stdout bytes.Buffer
-	//var stderr bytes.Buffer
-	//cmd.Stdout = &stdout
-	//cmd.Stderr = &stderr
-	//runError := cmd.Run()
-	//if runError != nil {
-	//	logger.LogError(runError, stderr.String())
-	//	s.Stop()
-	//} else {
-	//	logger.LogOutput(stdout.String())
-	//	s.Stop()
-	//}
-
 	return string(out), err
 }
