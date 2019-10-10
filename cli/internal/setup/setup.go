@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/leapfrogtechnology/shift/cli/internal/config"
 )
 
 type projectDetails struct {
@@ -16,6 +17,8 @@ type projectDetails struct {
 type deploymentDetails struct {
 	DeploymentName string
 	CloudProvider  string
+	Profile        string
+	Region         string
 	DeploymentType string
 }
 
@@ -84,6 +87,20 @@ func askDeploymentDetails() *deploymentDetails {
 			},
 		},
 		{
+			Name: "awsProfile",
+			Prompt: &survey.Select{
+				Message: "Chose Aws Profile:",
+				Options: config.GetProfiles(),
+			},
+		},
+		{
+			Name: "awsRegion",
+			Prompt: &survey.Select{
+				Message: "Region:",
+				Options: config.GetRegions(),
+			},
+		},
+		{
 			Name: "deploymentType",
 			Prompt: &survey.Select{
 				Message: "Choose Deployment Type:",
@@ -94,6 +111,7 @@ func askDeploymentDetails() *deploymentDetails {
 
 	answers := &deploymentDetails{}
 	err := survey.Ask(questions, answers)
+	answers.Region = config.GetRegionCode(answers.Region)
 
 	if err != nil {
 		fmt.Println(err)
