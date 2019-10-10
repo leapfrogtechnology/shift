@@ -203,11 +203,11 @@ func Run() {
 		},
 	}
 
-	projectRequestJSON, _ := json.Marshal(projectRequest)
+	// projectRequestJSON, _ := json.Marshal(projectRequest)
 
-	fmt.Println(string(projectRequestJSON))
+	// fmt.Println(string(projectRequestJSON))
 
-	jsonData, _ := json.MarshalIndent(projectRequestJSON, "", " ")
+	jsonData, _ := json.MarshalIndent(projectRequest, "", " ")
 
 	currentDir, _ := os.Getwd()
 	fileName := currentDir + "/shift.json"
