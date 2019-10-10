@@ -3,6 +3,8 @@ package setup
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 
 	"github.com/AlecAivazis/survey/v2"
 )
@@ -201,11 +203,16 @@ func Run() {
 		},
 	}
 
-	projectRequestJSON, _ := json.Marshal(projectRequest)
+	// projectRequestJSON, _ := json.Marshal(projectRequest)
 
-	fmt.Println(string(projectRequestJSON))
+	// fmt.Println(string(projectRequestJSON))
 
-	// 1. Save json code here.
+	jsonData, _ := json.MarshalIndent(projectRequest, "", " ")
+
+	currentDir, _ := os.Getwd()
+	fileName := currentDir + "/shift.json"
+
+	_ = ioutil.WriteFile(fileName, jsonData, 0644)
 
 	// 2. Run infrastructre code here and save to JSON again
 
