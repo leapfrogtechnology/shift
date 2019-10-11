@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/leapfrogtechnology/shift/cli/internal/config"
 )
 
 type projectDetails struct {
@@ -16,6 +17,8 @@ type projectDetails struct {
 type deploymentDetails struct {
 	DeploymentName string
 	CloudProvider  string
+	Profile        string
+	Region         string
 	DeploymentType string
 }
 
@@ -33,6 +36,8 @@ type backendBuildInformation struct {
 type deployment struct {
 	Name            string `json:"name"`
 	Platform        string `json:"platform"`
+	Profile         string `json:"profile"`
+	Region          string `json:"region"`
 	Type            string `json:"type"`
 	BuildCommand    string `json:"buildCommand"`
 	DistFolder      string `json:"distFolder"`
@@ -84,6 +89,20 @@ func askDeploymentDetails() *deploymentDetails {
 			},
 		},
 		{
+			Name: "Profile",
+			Prompt: &survey.Select{
+				Message: "Chose Aws Profile:",
+				Options: config.GetProfiles(),
+			},
+		},
+		{
+			Name: "Region",
+			Prompt: &survey.Select{
+				Message: "Region:",
+				Options: config.GetRegions(),
+			},
+		},
+		{
 			Name: "deploymentType",
 			Prompt: &survey.Select{
 				Message: "Choose Deployment Type:",
@@ -94,6 +113,7 @@ func askDeploymentDetails() *deploymentDetails {
 
 	answers := &deploymentDetails{}
 	err := survey.Ask(questions, answers)
+	answers.Region = config.GetRegionCode(answers.Region)
 
 	if err != nil {
 		fmt.Println(err)
@@ -193,6 +213,8 @@ func Run() {
 		Deployment: deployment{
 			Name:            deploymentDetails.DeploymentName,
 			Platform:        deploymentDetails.CloudProvider,
+			Profile:         deploymentDetails.Profile,
+			Region:          deploymentDetails.Region,
 			Type:            deploymentDetails.DeploymentType,
 			BuildCommand:    frontendBuildInformation.BuildCommand,
 			DistFolder:      frontendBuildInformation.DistFolder,
