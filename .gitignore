@@ -28,6 +28,7 @@ deploy
 
 # Configfiles
 config.json
+shift.json
 
 # artifacts
 artifact

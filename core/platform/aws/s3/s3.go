@@ -8,8 +8,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	awsService "github.com/leapfrogtechnology/shift/deployment/services/aws"
-	fileUtil "github.com/leapfrogtechnology/shift/deployment/utils/file"
+	awsService "github.com/leapfrogtechnology/shift/core/platform/aws"
+	fileUtil "github.com/leapfrogtechnology/shift/core/utils/file"
 	"github.com/leapfrogtechnology/shift/deployment/utils/spinner"
 )
 

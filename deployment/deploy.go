@@ -99,6 +99,7 @@ func deploy(msg []byte) {
 			"#FF6871")
 	}
 }
+
 func triggerDeploy(msg []byte) {
 	triggerRequest := project.TriggerRequest{}
 	json.Unmarshal(msg, &triggerRequest)
