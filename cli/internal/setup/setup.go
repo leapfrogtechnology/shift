@@ -36,6 +36,8 @@ type backendBuildInformation struct {
 type deployment struct {
 	Name            string `json:"name"`
 	Platform        string `json:"platform"`
+	Profile         string `json:"profile"`
+	Region          string `json:"region"`
 	Type            string `json:"type"`
 	BuildCommand    string `json:"buildCommand"`
 	DistFolder      string `json:"distFolder"`
@@ -87,14 +89,14 @@ func askDeploymentDetails() *deploymentDetails {
 			},
 		},
 		{
-			Name: "awsProfile",
+			Name: "Profile",
 			Prompt: &survey.Select{
 				Message: "Chose Aws Profile:",
 				Options: config.GetProfiles(),
 			},
 		},
 		{
-			Name: "awsRegion",
+			Name: "Region",
 			Prompt: &survey.Select{
 				Message: "Region:",
 				Options: config.GetRegions(),
@@ -211,6 +213,8 @@ func Run() {
 		Deployment: deployment{
 			Name:            deploymentDetails.DeploymentName,
 			Platform:        deploymentDetails.CloudProvider,
+			Profile:         deploymentDetails.Profile,
+			Region:          deploymentDetails.Region,
 			Type:            deploymentDetails.DeploymentType,
 			BuildCommand:    frontendBuildInformation.BuildCommand,
 			DistFolder:      frontendBuildInformation.DistFolder,

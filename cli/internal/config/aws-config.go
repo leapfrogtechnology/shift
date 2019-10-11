@@ -77,7 +77,7 @@ func getRegionsWithCode() map[string]string {
 func GetRegions() []string {
 	var regions []string
 
-	for _, key := range getRegionsWithCode() {
+	for key := range getRegionsWithCode() {
 		regions = append(regions, key)
 	}
 
