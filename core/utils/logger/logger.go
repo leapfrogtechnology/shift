@@ -1,13 +1,14 @@
 package logger
 
 import (
-	"github.com/logrusorgru/aurora"
 	"log"
+
+	"github.com/logrusorgru/aurora"
 )
 
 func FailOnError(err error, msg string) {
 	if err != nil {
-		log.Fatalf("Fatal\n%s: %s",aurora.Red(msg), aurora.Red(err))
+		log.Fatalf("Fatal\n%s: %s", aurora.Red(msg), aurora.Red(err))
 	}
 }
 
