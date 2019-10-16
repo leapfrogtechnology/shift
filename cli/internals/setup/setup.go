@@ -7,7 +7,8 @@ import (
 	"os"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/leapfrogtechnology/shift/cli/internal/config"
+	"github.com/leapfrogtechnology/shift/cli/internals/config"
+	"github.com/leapfrogtechnology/shift/core/structs"
 )
 
 type projectDetails struct {
@@ -15,42 +16,21 @@ type projectDetails struct {
 }
 
 type deploymentDetails struct {
-	DeploymentName string
 	CloudProvider  string
 	Profile        string
 	Region         string
 	DeploymentType string
+	Environment    string
 }
 
 type frontendBuildInformation struct {
-	BuildCommand string
-	DistFolder   string
+	DistFolder string
 }
 
 type backendBuildInformation struct {
 	Port            string
 	HealthCheckPath string
 	DockerfilePath  string
-}
-
-type deployment struct {
-	Name            string `json:"name"`
-	Platform        string `json:"platform"`
-	Profile         string `json:"profile"`
-	Region          string `json:"region"`
-	Type            string `json:"type"`
-	BuildCommand    string `json:"buildCommand"`
-	DistFolder      string `json:"distFolder"`
-	Port            string `json:"port"`
-	HealthCheckPath string `json:"healthCheckPath"`
-	SlackURL        string `json:"slackURL"`
-	DockerFilePath  string `json:"dockerFilePath"`
-}
-
-// Project defines the overall structure for a project deployment.
-type Project struct {
-	ProjectName string     `json:"projectName"`
-	Deployment  deployment `json:"deployment"`
 }
 
 func askProjectDetails() *projectDetails {
@@ -76,12 +56,6 @@ func askProjectDetails() *projectDetails {
 func askDeploymentDetails() *deploymentDetails {
 	questions := []*survey.Question{
 		{
-			Name: "deploymentName",
-			Prompt: &survey.Input{
-				Message: "Deployment Name:",
-			},
-		},
-		{
 			Name: "cloudProvider",
 			Prompt: &survey.Select{
 				Message: "Choose Cloud Provider:",
@@ -105,8 +79,14 @@ func askDeploymentDetails() *deploymentDetails {
 		{
 			Name: "deploymentType",
 			Prompt: &survey.Select{
-				Message: "Choose Deployment Type:",
+				Message: "Choose Deployment Type: ",
 				Options: []string{"Frontend", "Backend"},
+			},
+		},
+		{
+			Name: "environment",
+			Prompt: &survey.Input{
+				Message: "Environment name: ",
 			},
 		},
 	}
@@ -125,15 +105,9 @@ func askDeploymentDetails() *deploymentDetails {
 func askFrontendBuildInformation() *frontendBuildInformation {
 	questions := []*survey.Question{
 		{
-			Name: "buildCommand",
-			Prompt: &survey.Input{
-				Message: "Build Command: ",
-			},
-		},
-		{
 			Name: "distFolder",
 			Prompt: &survey.Input{
-				Message: "Distribution Folder: ",
+				Message: "Build Directory: ",
 			},
 		},
 	}
@@ -208,20 +182,19 @@ func Run() {
 
 	slackEndpoint := askSlackEndpoint()
 
-	projectRequest := Project{
-		ProjectName: projectDetails.ProjectName,
-		Deployment: deployment{
-			Name:            deploymentDetails.DeploymentName,
-			Platform:        deploymentDetails.CloudProvider,
-			Profile:         deploymentDetails.Profile,
-			Region:          deploymentDetails.Region,
-			Type:            deploymentDetails.DeploymentType,
-			BuildCommand:    frontendBuildInformation.BuildCommand,
-			DistFolder:      frontendBuildInformation.DistFolder,
-			Port:            backendBuildInformation.Port,
-			HealthCheckPath: backendBuildInformation.HealthCheckPath,
-			SlackURL:        slackEndpoint,
-			DockerFilePath:  backendBuildInformation.DockerfilePath,
+	projectRequest := structs.Project{
+		Name:            projectDetails.ProjectName,
+		Platform:        deploymentDetails.CloudProvider,
+		Profile:         deploymentDetails.Profile,
+		Region:          deploymentDetails.Region,
+		Type:            deploymentDetails.DeploymentType,
+		DistDir:         frontendBuildInformation.DistFolder,
+		Port:            backendBuildInformation.Port,
+		HealthCheckPath: backendBuildInformation.HealthCheckPath,
+		SlackURL:        slackEndpoint,
+		DockerFilePath:  backendBuildInformation.DockerfilePath,
+		Env: map[string]structs.Env{
+			deploymentDetails.Environment: structs.Env{},
 		},
 	}
 
