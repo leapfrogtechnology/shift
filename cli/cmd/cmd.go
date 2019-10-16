@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/urfave/cli"
@@ -23,15 +22,6 @@ func Initialize(info *Info) error {
 	app.Usage = info.Description
 
 	app.Commands = []cli.Command{
-		{
-			Name:        "infrastructure",
-			Description: "Initialize",
-			Aliases:     nil,
-			Usage:       "Initialize your Application",
-			Action: func(c *cli.Context) {
-				fmt.Println("Shift Shift shift")
-			},
-		},
 		cli.Command{
 			Name: "setup",
 			Action: func(ctx *cli.Context) error {
