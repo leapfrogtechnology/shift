@@ -1,13 +1,11 @@
 package setup
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/leapfrogtechnology/shift/cli/internals/config"
+	"github.com/leapfrogtechnology/shift/core/platforms/aws"
+	"github.com/leapfrogtechnology/shift/core/services/storage"
 	"github.com/leapfrogtechnology/shift/core/structs"
 )
 
@@ -66,14 +64,14 @@ func askDeploymentDetails() *deploymentDetails {
 			Name: "Profile",
 			Prompt: &survey.Select{
 				Message: "Chose Aws Profile:",
-				Options: config.GetProfiles(),
+				Options: aws.GetProfiles(),
 			},
 		},
 		{
 			Name: "Region",
 			Prompt: &survey.Select{
 				Message: "Region:",
-				Options: config.GetRegions(),
+				Options: aws.GetRegions(),
 			},
 		},
 		{
@@ -93,7 +91,7 @@ func askDeploymentDetails() *deploymentDetails {
 
 	answers := &deploymentDetails{}
 	err := survey.Ask(questions, answers)
-	answers.Region = config.GetRegionCode(answers.Region)
+	answers.Region = aws.GetRegionCode(answers.Region)
 
 	if err != nil {
 		fmt.Println(err)
@@ -198,18 +196,10 @@ func Run() {
 		},
 	}
 
-	// projectRequestJSON, _ := json.Marshal(projectRequest)
+	// 1. Save project details to shift.json.
+	storage.Save(projectRequest)
 
-	// fmt.Println(string(projectRequestJSON))
+	// 2. Run infrastructre code and save to JSON again with updated information.
 
-	jsonData, _ := json.MarshalIndent(projectRequest, "", " ")
-
-	currentDir, _ := os.Getwd()
-	fileName := currentDir + "/shift.json"
-
-	_ = ioutil.WriteFile(fileName, jsonData, 0644)
-
-	// 2. Run infrastructre code here and save to JSON again
-
-	// 3. Deploy to infrastructure code here.
+	// 3. Deploy to created infrastructure.
 }

@@ -4,16 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 
-	"github.com/leapfrogtechnology/shift/deployment/domain/project"
+	"github.com/leapfrogtechnology/shift/core/structs"
 )
-
-type deployment map[string]project.Response
-
-// Data is stored as shift.json.
-type Data map[string]deployment
-
-var saveFilePath = "/var/lib/shift"
 
 func failOnError(err error, msg string) {
 	if err != nil {
@@ -22,11 +16,14 @@ func failOnError(err error, msg string) {
 }
 
 // Read parses data from shift.json
-func Read() Data {
-	data, err := ioutil.ReadFile(saveFilePath + "/shift.json")
+func Read() structs.Project {
+	currentDir, _ := os.Getwd()
+	fileName := currentDir + "/shift.json"
+	data, err := ioutil.ReadFile(fileName)
+
 	failOnError(err, "Error reading file.")
 
-	jsonData := Data{}
+	jsonData := structs.Project{}
 
 	json.Unmarshal(data, &jsonData)
 
@@ -36,18 +33,13 @@ func Read() Data {
 }
 
 // Save persists project data in shift.json.
-func Save(project project.Response) {
-	jsonData := Read()
+func Save(project structs.Project) {
+	jsonData, _ := json.MarshalIndent(project, " ", " ")
 
-	if _, exists := jsonData[project.ProjectName]; exists {
-		jsonData[project.ProjectName][project.Deployment.Name] = project
-	} else {
-		jsonData[project.ProjectName] = deployment{
-			project.Deployment.Name: project,
-		}
-	}
+	currentDir, _ := os.Getwd()
+	fileName := currentDir + "/shift.json"
 
-	data, _ := json.MarshalIndent(jsonData, "", " ")
+	error := ioutil.WriteFile(fileName, jsonData, 0644)
 
-	ioutil.WriteFile(saveFilePath+"/shift.json", data, 0644)
+	failOnError(error, "Could not save to file.")
 }
