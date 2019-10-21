@@ -3,7 +3,6 @@ package initialize
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"strings"
 
@@ -73,20 +72,18 @@ type frontendTerraformOutput struct {
 // }
 
 // Run intitializes the infrastructure in the specified cloud provider.
-func Run(project structs.Project, environment string) string {
+func Run(project structs.Project, environment string) interface{} {
 	if !utils.CommandExists("terraform") {
 		logger.FailOnError(errors.New("terraform does not exist"), "Please install terraform on your device")
 	}
 
 	infrastructureInfo := Initialize(project, environment)
 
-	logger.LogOutput(infrastructureInfo)
-
 	return infrastructureInfo
 }
 
 // Initialize creates infrastructure for frontend and backend according the given input.
-func Initialize(project structs.Project, environment string) string {
+func Initialize(project structs.Project, environment string) interface{} {
 	if strings.EqualFold(project.Type, "frontend") {
 		out := CreateFrontend(project, environment)
 
@@ -104,7 +101,7 @@ func Initialize(project structs.Project, environment string) string {
 }
 
 // CreateFrontend creates infrastructure for frontend.
-func CreateFrontend(project structs.Project, environment string) string {
+func CreateFrontend(project structs.Project, environment string) structs.Frontend {
 	workspaceRoot := "/tmp"
 
 	terraformOutput := frontendTerraformOutput{}
@@ -122,24 +119,10 @@ func CreateFrontend(project structs.Project, environment string) string {
 
 	_ = json.Unmarshal([]byte(output), &terraformOutput)
 
-	fmt.Println(terraformOutput)
+	frontend := structs.Frontend{
+		Bucket: terraformOutput.BucketName.Value,
+		URL:    terraformOutput.FrontendWebURL.Value,
+	}
 
-	// result := utils.FrontendResult{
-	// 	Project:    clientArgs.Project,
-	// 	Deployment: clientArgs.Deployment,
-	// 	Data:       frontendTerraformOutput,
-	// }
-
-	// out, err := json.Marshal(result)
-
-	// if err != nil {
-	// 	logger.LogError(err, "Error Marshalling output")
-	// 	return "", err
-	// }
-
-	// logger.LogOutput(string(out))
-
-	// return string(out), err
-
-	return ""
+	return frontend
 }
