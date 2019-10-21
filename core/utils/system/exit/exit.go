@@ -9,5 +9,6 @@ import (
 func Error(err interface{}) {
 	fmt.Println("Error")
 	fmt.Println(err)
+
 	os.Exit(1)
 }

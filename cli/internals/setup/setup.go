@@ -7,6 +7,7 @@ import (
 	"github.com/leapfrogtechnology/shift/core/platforms/aws"
 	"github.com/leapfrogtechnology/shift/core/services/storage"
 	"github.com/leapfrogtechnology/shift/core/structs"
+	"github.com/leapfrogtechnology/shift/infrastructure/internals/initialize"
 )
 
 type projectDetails struct {
@@ -200,6 +201,7 @@ func Run() {
 	storage.Save(projectRequest)
 
 	// 2. Run infrastructre code and save to JSON again with updated information.
+	initialize.Run(projectRequest, deploymentDetails.Environment)
 
 	// 3. Deploy to created infrastructure.
 }

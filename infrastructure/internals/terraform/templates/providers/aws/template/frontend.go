@@ -1,32 +1,34 @@
-package frontend_architecture
+package template
 
-const InfrastructureTemplate = `
+// FrontendTemplate defined the Terraform template required for frontend infrastructure.
+const FrontendTemplate = `
 // Terraform State Backend Initialization
 terraform {
   backend "remote" {
     organization = "lftechnology"
     token = "{{ info.Token }}"
     workspaces {
-      name = "{{ info.Client.Project }}-{{ info.Client.Deployment.Name }}-{{ info.Client.Deployment.Type }}"
+      name = "{{ info.Client.Name }}-{{ info.Client.Type }}-{{ info.Environment }}"
     }
   }
 }
 
 variable "region" {
-  default = "us-east-1"
+  default = "{{ info.Client.Region }}"
 }
 
 variable "bucket_name" {
-  default = "com.shift.{{ info.Client.Project|lower  }}.{{ info.Client.Deployment.Name|lower }}" 
-}
-// Provider Initialization
-provider "aws" {
-  region     = var.region
-  access_key = "{{ info.Client.Deployment.AccessKey }}"
-  secret_key = "{{ info.Client.Deployment.SecretKey }}"
+  default = "com.shift.{{ info.Client.Name|lower }}.{{ info.Environment }}" 
 }
 
-//Bucket Initialization
+// Provider Initialization
+provider "aws" {
+  region                  = var.region
+  shared_credentials_file = pathexpand("~/.aws/credentials")
+  profile                 = "{{ info.Client.Profile}}"
+}
+
+// Bucket Initialization
 resource "aws_s3_bucket" "bucket" {
   bucket = var.bucket_name
   acl    = "public-read"
@@ -96,7 +98,8 @@ resource "aws_cloudfront_distribution" "www_distribution" {
   wait_for_deployment = false
   tags = {
     Name = var.bucket_name
-    Project = "{{ info.Client.Project }}-{{ info.Client.Deployment.Name }}-{{ info.Client.Deployment.Type }}"
+    Project = "{{ info.Client.Name }}-{{ info.Client.Type }}"
+    Environment = "{{ info.Environment }}"
   }
 
   restrictions {

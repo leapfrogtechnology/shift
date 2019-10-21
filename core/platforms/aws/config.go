@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/leapfrogtechnology/shift/utils/system/exit"
+	"github.com/leapfrogtechnology/shift/core/utils/system/exit"
 )
 
 func handle(err error) {
