@@ -72,7 +72,7 @@ type frontendTerraformOutput struct {
 // }
 
 // Run intitializes the infrastructure in the specified cloud provider.
-func Run(project structs.Project, environment string) interface{} {
+func Run(project structs.Project, environment string) structs.Frontend {
 	if !utils.CommandExists("terraform") {
 		logger.FailOnError(errors.New("terraform does not exist"), "Please install terraform on your device")
 	}
@@ -83,7 +83,7 @@ func Run(project structs.Project, environment string) interface{} {
 }
 
 // Initialize creates infrastructure for frontend and backend according the given input.
-func Initialize(project structs.Project, environment string) interface{} {
+func Initialize(project structs.Project, environment string) structs.Frontend {
 	if strings.EqualFold(project.Type, "frontend") {
 		out := CreateFrontend(project, environment)
 
@@ -97,7 +97,7 @@ func Initialize(project structs.Project, environment string) interface{} {
 
 	logger.FailOnError(errors.New("Unknown Deployment Type"), project.Type)
 
-	return ""
+	return structs.Frontend{}
 }
 
 // CreateFrontend creates infrastructure for frontend.

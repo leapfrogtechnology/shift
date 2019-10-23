@@ -1,7 +1,6 @@
 package template
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -37,6 +36,4 @@ func GenerateFrontendTemplate(project structs.Project, terraformPath string, env
 	err = ioutil.WriteFile(terraformFileName, []byte(out), 0600)
 
 	logger.FailOnError(err, "Failed to create terraform directory")
-
-	fmt.Println(out)
 }

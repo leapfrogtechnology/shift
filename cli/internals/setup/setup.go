@@ -4,9 +4,10 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/leapfrogtechnology/shift/core/platforms/aws"
+	"github.com/leapfrogtechnology/shift/core/services/platforms/aws"
 	"github.com/leapfrogtechnology/shift/core/services/storage"
 	"github.com/leapfrogtechnology/shift/core/structs"
+	"github.com/leapfrogtechnology/shift/deployment/internals/frontend"
 	"github.com/leapfrogtechnology/shift/infrastructure/internals/initialize"
 )
 
@@ -201,7 +202,15 @@ func Run() {
 	storage.Save(projectRequest)
 
 	// 2. Run infrastructre code and save to JSON again with updated information.
-	initialize.Run(projectRequest, deploymentDetails.Environment)
+	infraInfo := initialize.Run(projectRequest, deploymentDetails.Environment)
+
+	// 3. Save Infrastructure details to shift.json.
+	projectRequest.Env[deploymentDetails.Environment] = structs.Env{
+		Bucket: infraInfo.Bucket,
+	}
+
+	storage.Save(projectRequest)
 
 	// 3. Deploy to created infrastructure.
+	frontend.Deploy(projectRequest, deploymentDetails.Environment)
 }

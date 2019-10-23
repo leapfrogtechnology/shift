@@ -33,10 +33,9 @@ func Initialize(info *Info) error {
 		cli.Command{
 			Name: "deploy",
 			Action: func(ctx *cli.Context) error {
-				project := ctx.Args().Get(0)
-				deployment := ctx.Args().Get(1)
+				environment := ctx.Args().Get(0)
 
-				Deploy(project, deployment)
+				Deploy(environment)
 
 				return nil
 			},
