@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/leapfrogtechnology/shift/deployment/utils/escape"
+	"github.com/leapfrogtechnology/shift/core/utils/escape"
 )
 
 // Execute runs the process with the supplied environment.

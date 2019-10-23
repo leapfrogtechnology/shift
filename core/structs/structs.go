@@ -2,8 +2,9 @@ package structs
 
 // Env defines the structure for a single environment
 type Env struct {
-	Bucket  string `json:"bucket"`
-	Cluster string `json:"cluster"`
+	Bucket       string `json:"bucket"`
+	Cluster      string `json:"cluster"`
+	BuildCommand string `json:"buildCommand"`
 }
 
 // Project defines the overall structure for a project deployment.
