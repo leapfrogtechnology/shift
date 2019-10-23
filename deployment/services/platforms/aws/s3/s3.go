@@ -1,35 +1,34 @@
 package s3
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	awsService "github.com/leapfrogtechnology/shift/deployment/services/aws"
-	fileUtil "github.com/leapfrogtechnology/shift/deployment/utils/file"
-	"github.com/leapfrogtechnology/shift/deployment/utils/spinner"
+	awsService "github.com/leapfrogtechnology/shift/core/services/platforms/aws"
+	fileUtil "github.com/leapfrogtechnology/shift/core/utils/file"
+	"github.com/leapfrogtechnology/shift/core/utils/logger"
+	"github.com/leapfrogtechnology/shift/core/utils/spinner"
 )
 
 // Data contains the data needed to deploy to S3 bucket
 type Data struct {
-	AccessKey  string
-	SecretKey  string
-	Bucket     string
-	DistFolder string
-	URL        string
+	Profile string
+	Region  string
+	Bucket  string
+	DistDir string
 }
 
 // Deploy to S3 bucket
-func Deploy(data Data) {
-	session := awsService.GetSession(data.AccessKey, data.SecretKey)
+func Deploy(data Data) error {
+	session := awsService.GetSession(data.Profile, data.Region)
 	uploader := s3manager.NewUploader(session)
 
 	fileList := []string{}
 
-	filepath.Walk("/tmp/artifact/source/"+data.DistFolder,
+	filepath.Walk(data.DistDir,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -46,18 +45,16 @@ func Deploy(data Data) {
 
 	spinner.Start("Uploading")
 
-	print(fileList)
-	print("----")
 	for _, file := range fileList {
 		f, _ := os.Open(file)
 
-		fmt.Println(file)
+		logger.Info("Uploading: " + file)
 
-		key := strings.TrimPrefix(file, "/tmp/artifact/source/"+data.DistFolder)
+		key := strings.TrimPrefix(file, data.DistDir)
 		contentType := fileUtil.GetFileContentType(file)
 
 		// Upload the file to S3.
-		output, err := uploader.Upload(&s3manager.UploadInput{
+		_, err := uploader.Upload(&s3manager.UploadInput{
 			Bucket:      aws.String(data.Bucket),
 			Key:         aws.String(key),
 			ContentType: aws.String(contentType),
@@ -65,14 +62,15 @@ func Deploy(data Data) {
 		})
 
 		if err != nil {
-			fmt.Println("error")
-			fmt.Println(err)
+			return err
 		}
 
-		fmt.Println(output.Location)
+		logger.Success("Successfully Uploaded")
 	}
 
-	fmt.Println("Uploaded all files.")
-	fmt.Println("Project deployed at " + data.URL)
+	logger.Info("Congrats! 🎉 🎉 All files have been uploaded successfully.")
+
 	spinner.Stop()
+
+	return nil
 }
