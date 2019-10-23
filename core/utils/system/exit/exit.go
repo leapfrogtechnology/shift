@@ -1,14 +1,14 @@
 package exit
 
 import (
-	"fmt"
 	"os"
+
+	"github.com/leapfrogtechnology/shift/core/utils/logger"
 )
 
 // Error exits the application by showing the given message.
-func Error(err interface{}) {
-	fmt.Println("Error")
-	fmt.Println(err)
+func Error(err error, msg string) {
+	logger.Error(err, msg)
 
 	os.Exit(1)
 }

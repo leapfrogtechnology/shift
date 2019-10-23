@@ -11,7 +11,7 @@ import (
 
 func handle(err error) {
 	if err != nil {
-		exit.Error(err)
+		exit.Error(err, "")
 	}
 }
 
