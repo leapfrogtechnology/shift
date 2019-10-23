@@ -2,6 +2,7 @@ package file
 
 import (
 	"mime"
+	"os"
 	"strings"
 )
 
@@ -16,4 +17,12 @@ func GetFileContentType(filename string) string {
 	ext := split[len(split)-1]
 
 	return mime.TypeByExtension("." + ext)
+}
+
+// IsExist check existence of file
+func IsExist(filepath string) bool {
+	if _, err := os.Stat(filepath); err == nil {
+		return true
+	}
+	return false
 }

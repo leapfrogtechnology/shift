@@ -41,6 +41,16 @@ func Initialize(info *Info) error {
 			},
 		},
 		cli.Command{
+			Name: "destroy",
+			Action: func(ctx *cli.Context) error {
+				environment := ctx.Args().Get(0)
+
+				Destroy(environment)
+
+				return nil
+			},
+		},
+		cli.Command{
 			Name: "add",
 			Subcommands: []cli.Command{
 				{
