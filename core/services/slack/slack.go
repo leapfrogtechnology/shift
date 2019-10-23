@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/leapfrogtechnology/shift/deployment/utils/http"
+	"github.com/leapfrogtechnology/shift/core/utils/http"
 )
 
 // Notify sends data to slack webhook url

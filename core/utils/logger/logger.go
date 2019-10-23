@@ -24,6 +24,11 @@ func LogInfo(msg string) {
 	log.Println(aurora.Blue(msg))
 }
 
+// Log logs msg with default color.
+func Log(msg string) {
+	log.Println(msg)
+}
+
 // Success logs msg with green color.
 func Success(msg string) {
 	log.Println(aurora.Green(msg))

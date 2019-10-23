@@ -16,5 +16,4 @@ func Deploy(project structs.Project, environment string) {
 	})
 
 	logger.FailOnError(err, "Deployment Failed.")
-
 }

@@ -48,7 +48,7 @@ func Deploy(data Data) error {
 	for _, file := range fileList {
 		f, _ := os.Open(file)
 
-		logger.Info("Uploading: " + file)
+		logger.Log("Uploading: " + file)
 
 		key := strings.TrimPrefix(file, data.DistDir)
 		contentType := fileUtil.GetFileContentType(file)
@@ -65,10 +65,10 @@ func Deploy(data Data) error {
 			return err
 		}
 
-		logger.Success("Successfully Uploaded")
+		logger.Success("Success")
 	}
 
-	logger.Info("Congrats! 🎉 🎉 All files have been uploaded successfully.")
+	logger.Info("🎉 🎉 🎉  Files Uploaded Successfully. 🎉 🎉 🎉")
 
 	spinner.Stop()
 
