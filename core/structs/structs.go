@@ -20,3 +20,9 @@ type Project struct {
 	HealthCheckPath string         `json:"healthCheckPath"`
 	Env             map[string]Env `json:"env"`
 }
+
+// Frontend defined the output for frontend infrastructure
+type Frontend struct {
+	Bucket string `json:"bucket"`
+	URL    string `json:"url"`
+}

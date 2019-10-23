@@ -3,10 +3,12 @@ package terraform
 import (
 	"bytes"
 	"fmt"
-	"github.com/briandowns/spinner"
-	"github.com/leapfrogtechnology/shift/core/utils/logger"
 	"os/exec"
 	"time"
+
+	"github.com/briandowns/spinner"
+	"github.com/leapfrogtechnology/shift/core/utils/logger"
+	"github.com/leapfrogtechnology/shift/infrastructure/services/terraform"
 )
 
 // TODO use terraform Library to remove the dependency of installing terraform
@@ -77,23 +79,34 @@ func getTerraformOutput(workspaceDir string) (string, error) {
 	return stdout.String(), err
 }
 
-func RunInfrastructureChanges(workspaceDir string) (string, error) {
-	//terraformCmdSequence :=[][]string {{"init"}, {"apply", "--auto-approve"}, {"output", "-json"}}
+// RunInfrastructureChanges starts terraform.
+func RunInfrastructureChanges(workspaceDir string, workspaceName string) (string, error) {
 	logger.LogInfo("Initializing")
 	err := initTerraform(workspaceDir)
+
+	// Set local execution instead of remote.
+	terraform.ActivateLocalRun(workspaceName)
+
 	if err != nil {
-		logger.LogError(err, "Something Went Wrong")
+		logger.LogError(err, "Couldnot initialize")
+
 		return "", err
 	}
+
 	logger.LogInfo("Applying")
 	err = applyTerraform(workspaceDir)
+
 	if err != nil {
-		logger.LogError(err, "Something Went Wrong")
+		logger.LogError(err, "Failed to apply changes")
+
 		return "", err
 	}
+
 	out, err := getTerraformOutput(workspaceDir)
+
 	if err != nil {
-		logger.LogError(err, "Something Went Wrong")
+		logger.LogError(err, "Failed to get terraform output")
+
 		return "", err
 	}
 

@@ -4,9 +4,12 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/leapfrogtechnology/shift/core/platforms/aws"
+	"github.com/leapfrogtechnology/shift/cli/internals/deploy"
+	"github.com/leapfrogtechnology/shift/core/services/platforms/aws"
 	"github.com/leapfrogtechnology/shift/core/services/storage"
 	"github.com/leapfrogtechnology/shift/core/structs"
+	"github.com/leapfrogtechnology/shift/core/utils/logger"
+	"github.com/leapfrogtechnology/shift/infrastructure/internals/initialize"
 )
 
 type projectDetails struct {
@@ -200,6 +203,18 @@ func Run() {
 	storage.Save(projectRequest)
 
 	// 2. Run infrastructre code and save to JSON again with updated information.
+	infraInfo := initialize.Run(projectRequest, deploymentDetails.Environment)
+
+	// 3. Save Infrastructure details to shift.json.
+	projectRequest.Env[deploymentDetails.Environment] = structs.Env{
+		Bucket: infraInfo.Bucket,
+	}
+
+	storage.Save(projectRequest)
 
 	// 3. Deploy to created infrastructure.
+	deploy.Run(deploymentDetails.Environment)
+
+	logger.Info("Project Deployed At: " + infraInfo.URL)
+	logger.Info("⏳ Stay put. It might take some time for the changes to be reflected. ⏳")
 }
