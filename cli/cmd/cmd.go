@@ -40,6 +40,19 @@ func Initialize(info *Info) error {
 				return nil
 			},
 		},
+		cli.Command{
+			Name: "add",
+			Subcommands: []cli.Command{
+				{
+					Name: "env",
+					Action: func(ctx *cli.Context) error {
+						AddEnv()
+
+						return nil
+					},
+				},
+			},
+		},
 	}
 
 	return app.Run(os.Args)
