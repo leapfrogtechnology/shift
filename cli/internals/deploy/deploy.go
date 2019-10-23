@@ -32,5 +32,5 @@ func Run(environment string) {
 		frontend.Deploy(project, environment)
 	}
 
-	slack.Notify(project.SlackURL, fmt.Sprintf("*%s* succesfully deployed to *%s*.", project.Name, environment), "#04EBB8")
+	slack.Notify(project.SlackURL, fmt.Sprintf(" 🎉 🎉 🎉 *%s* succesfully deployed to *%s*. 🎉 🎉 🎉", project.Name, environment), "#04EBB8")
 }

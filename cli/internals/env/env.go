@@ -7,6 +7,7 @@ import (
 
 	"github.com/leapfrogtechnology/shift/core/services/storage"
 	"github.com/leapfrogtechnology/shift/core/structs"
+	"github.com/leapfrogtechnology/shift/core/utils/logger"
 	"github.com/leapfrogtechnology/shift/infrastructure/internals/initialize"
 )
 
@@ -34,4 +35,7 @@ func Run() {
 	storage.Save(project)
 
 	deploy.Run(environment)
+
+	logger.Info("Project Deployed At: " + infraInfo.URL)
+	logger.Info("⏳ Stay put. It might take some time for the changes to be reflected. ⏳")
 }
