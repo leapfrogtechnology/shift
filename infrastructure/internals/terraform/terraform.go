@@ -3,7 +3,6 @@ package terraform
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"os/exec"
 
@@ -28,16 +27,16 @@ func initTerraform(workspaceDir string) error {
 
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println(err)
+		logger.LogError(err, "")
 		spinner.Stop()
 		return err
 	}
 	spinner.Stop()
+
 	return nil
 }
 
 func applyTerraform(workspaceDir string) error {
-
 	logger.LogInfo("  Applying Changes")
 	spinner.Start(" ")
 
@@ -54,13 +53,14 @@ func applyTerraform(workspaceDir string) error {
 		return err
 	}
 	spinner.Stop()
+
 	return nil
 }
 
 func getTerraformOutput(workspaceDir string) (string, error) {
-
 	logger.LogInfo("  Generating Output")
 	spinner.Start(" ")
+
 	cmd := exec.Command("terraform", "output", "-json")
 	cmd.Dir = workspaceDir
 	var stdout bytes.Buffer
@@ -68,11 +68,13 @@ func getTerraformOutput(workspaceDir string) (string, error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
+
 	if err != nil {
 		logger.LogError(err, stderr.String())
 		spinner.Stop()
 		return "", err
 	}
+
 	spinner.Stop()
 
 	return stdout.String(), err
@@ -85,7 +87,6 @@ func RunInfrastructureChanges(workspaceDir string, workspaceName string) (string
 
 	// Set local execution instead of remote.
 	terraform.ActivateLocalRun(workspaceName)
-
 	if err != nil {
 		logger.LogError(err, "Couldnot initialize")
 
@@ -94,7 +95,6 @@ func RunInfrastructureChanges(workspaceDir string, workspaceName string) (string
 
 	logger.LogInfo("Applying")
 	err = applyTerraform(workspaceDir)
-
 	if err != nil {
 		logger.LogError(err, "Failed to apply changes")
 
@@ -102,7 +102,6 @@ func RunInfrastructureChanges(workspaceDir string, workspaceName string) (string
 	}
 
 	out, err := getTerraformOutput(workspaceDir)
-
 	if err != nil {
 		logger.LogError(err, "Failed to get terraform output")
 
@@ -122,22 +121,22 @@ func DestroyInfrastructure(workspaceDir string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
-	message := " ERROR While Destroying Infrastructure"
+
+	const message = " ERROR While Destroying Infrastructure"
 	if err != nil {
 		logger.LogError(err, message)
 		spinner.Stop()
 		return errors.New(err.Error() + message)
 	}
-
 	spinner.Stop()
-	return nil
 
+	return nil
 }
 
 // MakeTempAndDestroy create infrastructure template and distroy the infrastructure
 func MakeTempAndDestroy(project structs.Project, environment, workspaceDir string) error {
-
 	logger.LogInfo("Generating Templates....")
+
 	if project.Type == "Frontend" {
 		template.GenerateFrontendTemplate(project, workspaceDir, environment)
 	} else {
@@ -145,5 +144,6 @@ func MakeTempAndDestroy(project structs.Project, environment, workspaceDir strin
 	}
 	initTerraform(workspaceDir)
 	err := DestroyInfrastructure(workspaceDir)
+
 	return err
 }
