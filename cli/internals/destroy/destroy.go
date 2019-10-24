@@ -12,14 +12,14 @@ import (
 	"github.com/leapfrogtechnology/shift/infrastructure/internals/terraform"
 )
 
-func askConformation(environment, projectName string) string {
-	conformation := ""
+func askConfirmation(environment, projectName string) string {
+	confirmation := ""
 	prompt := &survey.Input{
 		Message: "Are you sure you want to destroy " + environment + " environment from " + projectName + " ?(Y/N): ",
 	}
-	survey.AskOne(prompt, &conformation)
+	survey.AskOne(prompt, &confirmation)
 
-	return conformation
+	return confirmation
 }
 
 // Run initializes destruction of infrastructure
@@ -32,9 +32,9 @@ func Run(environment string) {
 		exit.Error(errors.New(message+"'"+environment+"'"), "Error")
 	}
 
-	conformation := askConformation(environment, project.Name)
+	confirmation := askConfirmation(environment, project.Name)
 
-	if strings.EqualFold(conformation, "Y") || strings.EqualFold(conformation, "yes") {
+	if strings.EqualFold(confirmation, "Y") || strings.EqualFold(confirmation, "yes") {
 
 		workspaceRoot := "/tmp"
 		workspaceDir := filepath.Join(workspaceRoot, project.Name, project.Type, environment)
@@ -49,7 +49,7 @@ func Run(environment string) {
 		}
 
 	} else {
-		const message = "Denied by user"
+		const message = "Operation aborted"
 		exit.Error(errors.New(message), "Cancelled")
 	}
 }

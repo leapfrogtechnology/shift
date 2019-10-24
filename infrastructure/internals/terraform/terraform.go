@@ -113,7 +113,7 @@ func RunInfrastructureChanges(workspaceDir string, workspaceName string) (string
 
 // DestroyInfrastructure destroys existing infrastructure
 func DestroyInfrastructure(workspaceDir string) error {
-	logger.LogInfo("Distroying Infrastructure...")
+	logger.LogInfo("Destroying Infrastructure...")
 	spinner.Start(" ")
 	cmd := exec.Command("terraform", "destroy", "--auto-approve")
 	cmd.Dir = workspaceDir
