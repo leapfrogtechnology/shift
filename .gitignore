@@ -23,6 +23,7 @@
 
 # Built Go Packages
 shift
+dist
 
 # Configfiles
 config.json
