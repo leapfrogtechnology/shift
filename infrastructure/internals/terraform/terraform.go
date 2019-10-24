@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"time"
 
-	"github.com/briandowns/spinner"
 	"github.com/leapfrogtechnology/shift/core/structs"
 	"github.com/leapfrogtechnology/shift/core/utils/logger"
+	"github.com/leapfrogtechnology/shift/core/utils/spinner"
 	"github.com/leapfrogtechnology/shift/infrastructure/internals/terraform/templates/providers/aws/template"
 	"github.com/leapfrogtechnology/shift/infrastructure/services/terraform"
 )
@@ -18,68 +17,63 @@ import (
 // TODO use terraform Library to remove the dependency of installing terraform
 
 func initTerraform(workspaceDir string) error {
-	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond) // Build our new spinner
-	s.Prefix = "  "
-	s.Suffix = "  Initializing"
-	_ = s.Color("cyan", "bold")
-	s.Start()
+	logger.LogInfo("  Initializing")
+	spinner.Start(" ")
+
 	cmd := exec.Command("terraform", "init")
 	cmd.Dir = workspaceDir
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println()
-		s.Stop()
+		fmt.Println(err)
+		spinner.Stop()
 		return err
 	}
-	s.Stop()
+	spinner.Stop()
 	return nil
 }
 
 func applyTerraform(workspaceDir string) error {
-	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond) // Build our new spinner
-	s.Prefix = "  "
-	s.Suffix = "  Applying Changes"
-	_ = s.Color("cyan", "bold")
-	s.Start()
+
+	logger.LogInfo("  Applying Changes")
+	spinner.Start(" ")
+
 	cmd := exec.Command("terraform", "apply", "--auto-approve")
 	cmd.Dir = workspaceDir
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
 	err := cmd.Run()
 	if err != nil {
-		logger.LogError(err, stderr.String())
-		s.Stop()
+		logger.LogError(err, "Error While terraform apply")
+		spinner.Stop()
 		return err
 	}
-	s.Stop()
+	spinner.Stop()
 	return nil
 }
 
 func getTerraformOutput(workspaceDir string) (string, error) {
-	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond) // Build our new spinner
-	s.Prefix = "  "
-	s.Suffix = "  Generating Output"
-	_ = s.Color("cyan", "bold")
-	s.Start()
+
+	logger.LogInfo("  Generating Output")
+	spinner.Start(" ")
 	cmd := exec.Command("terraform", "output", "-json")
 	cmd.Dir = workspaceDir
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
 		logger.LogError(err, stderr.String())
-		s.Stop()
+		spinner.Stop()
 		return "", err
 	}
-	s.Stop()
+	spinner.Stop()
 
 	return stdout.String(), err
 }
@@ -118,36 +112,32 @@ func RunInfrastructureChanges(workspaceDir string, workspaceName string) (string
 	return out, err
 }
 
-// DestroyInfrastructure destroy existing infrastructure
+// DestroyInfrastructure destroys existing infrastructure
 func DestroyInfrastructure(workspaceDir string) error {
-	fmt.Println("Distroying Infrastructure...")
-	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond) // Build our new spinner
-	s.Prefix = "  "
-	_ = s.Color("cyan", "bold")
-	s.Start()
+	logger.LogInfo("Distroying Infrastructure...")
+	spinner.Start(" ")
 	cmd := exec.Command("terraform", "destroy", "--auto-approve")
 	cmd.Dir = workspaceDir
-	// var stdout bytes.Buffer
-	// var stderr bytes.Buffer
+
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	message := " ERROR While Destroying Infrastructure"
 	if err != nil {
 		logger.LogError(err, message)
-		s.Stop()
+		spinner.Stop()
 		return errors.New(err.Error() + message)
 	}
 
-	s.Stop()
+	spinner.Stop()
 	return nil
 
 }
 
-// MakeTempAndDestroy create infrastructure and distroy
+// MakeTempAndDestroy create infrastructure template and distroy the infrastructure
 func MakeTempAndDestroy(project structs.Project, environment, workspaceDir string) error {
 
-	logger.LogInfo("Generating Template")
+	logger.LogInfo("Generating Templates....")
 	if project.Type == "Frontend" {
 		template.GenerateFrontendTemplate(project, workspaceDir, environment)
 	} else {

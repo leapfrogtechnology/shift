@@ -2,24 +2,21 @@ package destroy
 
 import (
 	"errors"
-	"fmt"
-	"os"
 	"path/filepath"
 
-	"github.com/leapfrogtechnology/shift/core/services/slack"
 	"github.com/leapfrogtechnology/shift/core/services/storage"
 	"github.com/leapfrogtechnology/shift/core/utils/file"
-	"github.com/leapfrogtechnology/shift/core/utils/system"
 	"github.com/leapfrogtechnology/shift/core/utils/system/exit"
 	"github.com/leapfrogtechnology/shift/infrastructure/internals/terraform"
 )
 
-// Run initializes new environment.
+// Run initializes destruction of infrastructure
 func Run(environment string) {
-	project := storage.Read()
-	_, ok := project.Env[environment]
 
-	if !ok {
+	project := storage.Read()
+	_, env := project.Env[environment]
+
+	if !env {
 		exit.Error(errors.New("Unknown Environment type "+"'"+environment+"'"), "Error")
 	}
 
@@ -29,24 +26,12 @@ func Run(environment string) {
 
 	terraformFile := workspaceDir + "/infrastructure.tf"
 
-	slack.Notify(project.SlackURL,
-		fmt.Sprintf("*There is Infrastructure Destroy in progress* \n Project: `%s` \n Environment: `%s` \n Started by: `%s`",
-			project.Name, environment, system.CurrentUser()),
-		"#1CA7FB")
-
-	isExist := file.IsExist(terraformFile)
+	isExist := file.Exists(terraformFile)
 
 	if isExist {
-		err := terraform.DestroyInfrastructure(workspaceDir)
-
-		slack.Notify(project.SlackURL, fmt.Sprintf("Error :\n %s", err.Error()), "#04EBB8")
-		os.Exit(1)
+		terraform.DestroyInfrastructure(workspaceDir)
 
 	} else {
-		err := terraform.MakeTempAndDestroy(project, environment, workspaceDir)
-		slack.Notify(project.SlackURL, fmt.Sprintf("Error :\n %s", err.Error()), "#04EBB8")
-		os.Exit(1)
+		terraform.MakeTempAndDestroy(project, environment, workspaceDir)
 	}
-
-	slack.Notify(project.SlackURL, fmt.Sprintf(" 🎉 🎉 🎉Successfully destroyed *%s* env of *%s* from *%s*. 🎉 🎉 🎉", environment, project.Name, project.Platform), "#04EBB8")
 }

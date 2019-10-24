@@ -19,8 +19,8 @@ func GetFileContentType(filename string) string {
 	return mime.TypeByExtension("." + ext)
 }
 
-// IsExist check existence of file
-func IsExist(filepath string) bool {
+// Exists check existence of file
+func Exists(filepath string) bool {
 	if _, err := os.Stat(filepath); err == nil {
 		return true
 	}
