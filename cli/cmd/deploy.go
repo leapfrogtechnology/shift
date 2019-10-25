@@ -1,8 +1,10 @@
 package cmd
 
-// "github.com/leapfrogtechnology/shift/cli/internal/deploy"
+import (
+	"github.com/leapfrogtechnology/shift/cli/internals/deploy"
+)
 
-// Deploy triggers deployment for provided project.
-func Deploy(project string, deployment string) {
-	// deploy.Run(project, deployment)
+// Deploy triggers deployment for the given environment.
+func Deploy(environment string) {
+	deploy.Run(environment)
 }
