@@ -23,8 +23,9 @@
 
 # Built Go Packages
 shift
+dist
 
-# Configfiles
+# Config files
 config.json
 shift.json
 
