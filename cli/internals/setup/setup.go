@@ -2,6 +2,9 @@ package setup
 
 import (
 	"fmt"
+	"os"
+
+	utils "github.com/leapfrogtechnology/shift/core/utils/string"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/leapfrogtechnology/shift/cli/internals/deploy"
@@ -35,6 +38,7 @@ type backendBuildInformation struct {
 }
 
 func askProjectDetails() *projectDetails {
+
 	questions := []*survey.Question{
 		{
 			Name: "projectName",
@@ -45,12 +49,30 @@ func askProjectDetails() *projectDetails {
 	}
 
 	answers := &projectDetails{}
+
 	err := survey.Ask(questions, answers)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
+	valid := utils.IsAlphaNumeric(answers.ProjectName)
+
+	if !valid {
+		fmt.Println("Please enter valid project name")
+		os.Exit(3)
+	}
+
+	/*re := regexp.MustCompile("^[a-zA-Z0-9")
+
+	res := re.MatchString(answers.ProjectName)
+	if res {
+		fmt.Println("error in project name")
+	}
+
+	if err != nil {
+		fmt.Println(err)
+	}*/
 	return answers
 }
 
@@ -161,8 +183,14 @@ func askSlackEndpoint() string {
 	prompt := &survey.Input{
 		Message: "Slack webhook URL: ",
 	}
-	survey.AskOne(prompt, &slackEndpoint)
 
+	survey.AskOne(prompt, &slackEndpoint)
+	valid := utils.IsValidSlackWebHookURL(slackEndpoint)
+
+	if !valid {
+		fmt.Println("Please enter valid slack web hook url")
+		os.Exit(3)
+	}
 	return slackEndpoint
 }
 
