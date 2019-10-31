@@ -1,16 +1,18 @@
 package s3
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	awsService "github.com/leapfrogtechnology/shift/core/services/platforms/aws"
 	fileUtil "github.com/leapfrogtechnology/shift/core/utils/file"
-	"github.com/leapfrogtechnology/shift/core/utils/logger"
-	"github.com/leapfrogtechnology/shift/core/utils/spinner"
+
+	"github.com/schollz/progressbar/v2"
 )
 
 // Data contains the data needed to deploy to S3 bucket
@@ -43,17 +45,23 @@ func Deploy(data Data) error {
 			return nil
 		})
 
-	spinner.Start("Uploading")
+	bar := progressbar.NewOptions(len(fileList),
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionSetWidth(30),
+		progressbar.OptionShowIts(),
+		progressbar.OptionSetTheme(progressbar.Theme{
+			Saucer:        "[green]▌▌[reset]",
+			SaucerPadding: "[green]░[reset]",
+			BarStart:      "╢",
+			BarEnd:        "╟",
+		}))
 
 	for _, file := range fileList {
 		f, _ := os.Open(file)
 
-		logger.Log("Uploading: " + file)
-
 		key := strings.TrimPrefix(file, data.DistDir)
 		contentType := fileUtil.GetFileContentType(file)
 
-		// Upload the file to S3.
 		_, err := uploader.Upload(&s3manager.UploadInput{
 			Bucket:      aws.String(data.Bucket),
 			Key:         aws.String(key),
@@ -64,13 +72,11 @@ func Deploy(data Data) error {
 		if err != nil {
 			return err
 		}
-
-		logger.Success("Success")
+		bar.Describe("Uploading... " + file)
+		bar.Add(1)
 	}
 
-	logger.Info("🎉 🎉 🎉  Files Uploaded Successfully. 🎉 🎉 🎉")
-
-	spinner.Stop()
+	fmt.Println("\n\n" + strconv.Itoa(len(fileList)) + " Files Uploaded Successfully. 🎉 🎉 🎉")
 
 	return nil
 }
