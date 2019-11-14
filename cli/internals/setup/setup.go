@@ -62,17 +62,6 @@ func askProjectDetails() *projectDetails {
 		fmt.Println("Please enter valid project name")
 		os.Exit(3)
 	}
-
-	/*re := regexp.MustCompile("^[a-zA-Z0-9")
-
-	res := re.MatchString(answers.ProjectName)
-	if res {
-		fmt.Println("error in project name")
-	}
-
-	if err != nil {
-		fmt.Println(err)
-	}*/
 	return answers
 }
 
