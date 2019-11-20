@@ -14,7 +14,6 @@ import (
 	"github.com/leapfrogtechnology/shift/core/structs"
 	"github.com/leapfrogtechnology/shift/infrastructure/internals/terraform"
 	"github.com/leapfrogtechnology/shift/infrastructure/internals/terraform/templates/providers/aws/template"
-	// backendHaArchitecture "github.com/leapfrogtechnology/shift/infrastructure/internals/terraform/templates/providers/aws/backend-ha-architecture"
 )
 
 type terraformOutput struct {
@@ -28,51 +27,17 @@ type frontendTerraformOutput struct {
 	FrontendWebURL terraformOutput `json:"appUrl"`
 }
 
-// // CreateBackend creates infrastructure for the backend.
-// func CreateBackend(project structs.Project) (string, error) {
-// 	workspaceRoot := "/tmp"
-// 	var clientArgs utils.Client
-// 	var backendTerraformOutput utils.BackendTerraformOutput
-// 	logger.LogInfo("Gathering Info")
-
-// 	err := json.Unmarshal(ClientArgs, &clientArgs)
-// 	if err != nil {
-// 		logger.LogError(err, "Error Parsing Body")
-// 		return "", err
-// 	}
-// 	workspaceDir := filepath.Join(workspaceRoot, clientArgs.Project, clientArgs.Deployment.Name, clientArgs.Deployment.Type)
-// 	logger.LogInfo("Generating Template")
-// 	err = utils.GenerateFrontendTemplateFile(backendHaArchitecture.InfrastructureTemplate, clientArgs, workspaceDir)
-// 	containerTemplateFile := workspaceDir + "/sample.json.tpl"
-// 	_ = ioutil.WriteFile(containerTemplateFile, []byte(backendHaArchitecture.ContainerTemplate), 0600)
-// 	if err != nil {
-// 		logger.LogError(err, "Cannot Generate Template")
-// 		return "", err
-// 	}
-// 	logger.LogInfo("Running Infrastructure Changes")
-// 	terraformOutput, err := terraform.RunInfrastructureChanges(workspaceDir)
-// 	if err != nil {
-// 		logger.LogError(err, "Cannot Run Changes")
-// 		return "", err
-// 	}
-// 	_ = json.Unmarshal([]byte(terraformOutput), &backendTerraformOutput)
-// 	result := utils.BackendResult{
-// 		Project:    clientArgs.Project,
-// 		Deployment: clientArgs.Deployment,
-// 		Data:       backendTerraformOutput,
-// 	}
-// 	out, err := json.Marshal(result)
-// 	if err != nil {
-// 		logger.LogError(err, "Error Marshalling output")
-// 		return "", err
-// 	}
-// 	logger.LogOutput(string(out))
-
-// 	return string(out), err
-// }
+type backendTerraformOutput struct {
+	BackendClusterName         terraformOutput `json:"backendClusterName"`
+	BackendContainerDefinition terraformOutput `json:"backendContainerDefinition"`
+	BackendServiceID           terraformOutput `json:"backendServiceId"`
+	BackendTaskDefinitionID    terraformOutput `json:"backendTaskDefinitionId"`
+	BackendURL                 terraformOutput `json:"appUrl"`
+	RepoURL                    terraformOutput `json:"repoUrl"`
+}
 
 // Run intitializes the infrastructure in the specified cloud provider.
-func Run(project structs.Project, environment string) structs.Frontend {
+func Run(project structs.Project, environment string) structs.Infrastructure {
 	if !utils.CommandExists("terraform") {
 		logger.FailOnError(errors.New("terraform does not exist"), "Please install terraform on your device")
 	}
@@ -83,25 +48,24 @@ func Run(project structs.Project, environment string) structs.Frontend {
 }
 
 // Initialize creates infrastructure for frontend and backend according the given input.
-func Initialize(project structs.Project, environment string) structs.Frontend {
+func Initialize(project structs.Project, environment string) structs.Infrastructure {
 	if strings.EqualFold(project.Type, "frontend") {
 		out := CreateFrontend(project, environment)
 
 		return out
-	}
-	// else if strings.EqualFold(project.Type, "backend") {
-	// 	// out, err := CreateBackend(project)
+	} else if strings.EqualFold(project.Type, "backend") {
+		out := CreateBackend(project, environment)
 
-	// 	return out
-	// }
+		return out
+	}
 
 	logger.FailOnError(errors.New("Unknown Deployment Type"), project.Type)
 
-	return structs.Frontend{}
+	return structs.Infrastructure{}
 }
 
 // CreateFrontend creates infrastructure for frontend.
-func CreateFrontend(project structs.Project, environment string) structs.Frontend {
+func CreateFrontend(project structs.Project, environment string) structs.Infrastructure {
 	workspaceRoot := "/tmp"
 
 	terraformOutput := frontendTerraformOutput{}
@@ -119,10 +83,47 @@ func CreateFrontend(project structs.Project, environment string) structs.Fronten
 
 	_ = json.Unmarshal([]byte(output), &terraformOutput)
 
-	frontend := structs.Frontend{
+	frontend := structs.Infrastructure{
 		Bucket: terraformOutput.BucketName.Value,
 		URL:    terraformOutput.FrontendWebURL.Value,
 	}
 
 	return frontend
+}
+
+// CreateBackend creates infrastructure for the backend.
+func CreateBackend(project structs.Project, environment string) structs.Infrastructure {
+	workspaceRoot := "/tmp"
+
+	backendTerraformOutput := backendTerraformOutput{}
+
+	logger.LogInfo("Gathering Info")
+
+	workspaceDir := filepath.Join(workspaceRoot, project.Name, environment, project.Type)
+
+	logger.LogInfo("Generating Template")
+	template.GenerateBackendTemplate(project, workspaceDir, environment)
+
+	containerTemplateFile := workspaceDir + "/sample.json.tpl"
+	template.GenerateContainerTemplate(containerTemplateFile)
+
+	logger.LogInfo("Running Infrastructure Changes")
+
+	workspaceName := project.Name + "-" + project.Type + "-" + environment
+	terraformOutput, err := terraform.RunInfrastructureChanges(workspaceDir, workspaceName)
+
+	logger.FailOnError(err, "Cannot run changes")
+
+	_ = json.Unmarshal([]byte(terraformOutput), &backendTerraformOutput)
+
+	backend := structs.Infrastructure{
+		Cluster:             backendTerraformOutput.BackendClusterName.Value,
+		ContainerDefinition: backendTerraformOutput.BackendContainerDefinition.Value,
+		ServiceID:           backendTerraformOutput.BackendServiceID.Value,
+		TaskDefinitionID:    backendTerraformOutput.BackendTaskDefinitionID.Value,
+		BackendURL:          backendTerraformOutput.BackendURL.Value,
+		RepoURL:             backendTerraformOutput.RepoURL.Value,
+	}
+
+	return backend
 }
