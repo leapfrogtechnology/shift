@@ -2,9 +2,12 @@ package structs
 
 // Env defines the structure for a single environment
 type Env struct {
-	Bucket       string `json:"bucket,omitempty"`
-	Cluster      string `json:"cluster,omitempty"`
-	BuildCommand string `json:"buildCommand,omitempty"`
+	Bucket         string `json:"bucket,omitempty"`
+	Cluster        string `json:"cluster,omitempty"`
+	Service        string `json:"service,omitempty"`
+	Image          string `json:"image,omitempty"`
+	TaskDefinition string `json:"taskDefinition,omitempty"`
+	BuildCommand   string `json:"buildCommand,omitempty"`
 }
 
 // Project defines the overall structure for a project deployment.
@@ -28,8 +31,8 @@ type Infrastructure struct {
 	URL                 string `json:"url"`
 	Cluster             string `json:"cluster"`
 	ContainerDefinition string `json:"containerDefinition"`
-	ServiceID           string `json:"serviceID"`
-	TaskDefinitionID    string `json:"taskDefinitionID"`
+	Service             string `json:"service"`
+	TaskDefinition      string `json:"taskDefinition"`
 	BackendURL          string `json:"backendURL"`
 	RepoURL             string `json:"repoURL"`
 }

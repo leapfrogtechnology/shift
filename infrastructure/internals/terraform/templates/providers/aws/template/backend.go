@@ -436,6 +436,10 @@ output "backendServiceId" {
   value = module.fargate.fargate_service_id
 }
 
+output "service" {
+  value = var.fargate_cluster_name
+}
+
 output "backendClusterName" {
   value = var.fargate_cluster_name
 }

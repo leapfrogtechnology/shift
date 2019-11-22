@@ -31,6 +31,7 @@ type backendTerraformOutput struct {
 	BackendClusterName         terraformOutput `json:"backendClusterName"`
 	BackendContainerDefinition terraformOutput `json:"backendContainerDefinition"`
 	BackendServiceID           terraformOutput `json:"backendServiceId"`
+	Service                    terraformOutput `json:"service"`
 	BackendTaskDefinitionID    terraformOutput `json:"backendTaskDefinitionId"`
 	BackendURL                 terraformOutput `json:"appUrl"`
 	RepoURL                    terraformOutput `json:"repoUrl"`
@@ -119,8 +120,8 @@ func CreateBackend(project structs.Project, environment string) structs.Infrastr
 	backend := structs.Infrastructure{
 		Cluster:             backendTerraformOutput.BackendClusterName.Value,
 		ContainerDefinition: backendTerraformOutput.BackendContainerDefinition.Value,
-		ServiceID:           backendTerraformOutput.BackendServiceID.Value,
-		TaskDefinitionID:    backendTerraformOutput.BackendTaskDefinitionID.Value,
+		Service:             backendTerraformOutput.Service.Value,
+		TaskDefinition:      backendTerraformOutput.BackendTaskDefinitionID.Value,
 		BackendURL:          backendTerraformOutput.BackendURL.Value,
 		RepoURL:             backendTerraformOutput.RepoURL.Value,
 	}

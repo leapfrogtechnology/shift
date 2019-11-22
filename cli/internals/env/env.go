@@ -16,6 +16,7 @@ func askEnvironmentName() string {
 	prompt := &survey.Input{
 		Message: "Environment Name (eg: dev): ",
 	}
+
 	survey.AskOne(prompt, &environment)
 
 	return environment
