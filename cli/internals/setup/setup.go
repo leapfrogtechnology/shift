@@ -207,7 +207,11 @@ func Run() {
 
 	// 3. Save Infrastructure details to shift.json.
 	projectRequest.Env[deploymentDetails.Environment] = structs.Env{
-		Bucket: infraInfo.Bucket,
+		Bucket:         infraInfo.Bucket,
+		Cluster:        infraInfo.Cluster,
+		Service:        infraInfo.Service,
+		TaskDefinition: infraInfo.TaskDefinition,
+		Image:          infraInfo.RepoURL,
 	}
 
 	storage.Save(projectRequest)

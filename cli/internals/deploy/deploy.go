@@ -10,6 +10,7 @@ import (
 	"github.com/leapfrogtechnology/shift/core/utils/system"
 	"github.com/leapfrogtechnology/shift/core/utils/system/exit"
 
+	"github.com/leapfrogtechnology/shift/deployment/internals/backend"
 	"github.com/leapfrogtechnology/shift/deployment/internals/frontend"
 )
 
@@ -30,6 +31,8 @@ func Run(environment string) {
 
 	if strings.EqualFold(project.Type, "frontend") {
 		frontend.Deploy(project, environment)
+	} else if strings.EqualFold(project.Type, "backend") {
+		backend.Deploy(project, environment)
 	}
 
 	slack.Notify(project.SlackURL, fmt.Sprintf("*%s* succesfully deployed to *%s*. 🎉 🎉 🎉", project.Name, environment), "#04EBB8")

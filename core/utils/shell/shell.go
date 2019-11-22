@@ -30,5 +30,6 @@ func Execute(command string) error {
 
 		return errors.New(errorMessage)
 	}
+
 	return nil
 }

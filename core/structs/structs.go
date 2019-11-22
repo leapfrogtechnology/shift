@@ -2,9 +2,12 @@ package structs
 
 // Env defines the structure for a single environment
 type Env struct {
-	Bucket       string `json:"bucket,omitempty"`
-	Cluster      string `json:"cluster,omitempty"`
-	BuildCommand string `json:"buildCommand,omitempty"`
+	Bucket         string `json:"bucket,omitempty"`
+	Cluster        string `json:"cluster,omitempty"`
+	Service        string `json:"service,omitempty"`
+	Image          string `json:"image,omitempty"`
+	TaskDefinition string `json:"taskDefinition,omitempty"`
+	BuildCommand   string `json:"buildCommand,omitempty"`
 }
 
 // Project defines the overall structure for a project deployment.
@@ -22,8 +25,14 @@ type Project struct {
 	Env             map[string]Env `json:"env"`
 }
 
-// Frontend defined the output for frontend infrastructure
-type Frontend struct {
-	Bucket string `json:"bucket"`
-	URL    string `json:"url"`
+// Infrastructure defines the output for given by terraform.
+type Infrastructure struct {
+	Bucket              string `json:"bucket"`
+	URL                 string `json:"url"`
+	Cluster             string `json:"cluster"`
+	ContainerDefinition string `json:"containerDefinition"`
+	Service             string `json:"service"`
+	TaskDefinition      string `json:"taskDefinition"`
+	BackendURL          string `json:"backendURL"`
+	RepoURL             string `json:"repoURL"`
 }

@@ -1,13 +1,14 @@
-package backend_ha_architecture
+package template
 
-const InfrastructureTemplate = `
+// BackendTemplate defines the Terraform template required for backend infrastructure.
+const BackendTemplate = `
 // Terraform State Backend Initialization
 terraform {
   backend "remote" {
     organization = "lftechnology"
     token = "{{ info.Token }}"
     workspaces {
-      name = "{{ info.Client.Project }}-{{ info.Client.Deployment.Name }}-{{ info.Client.Deployment.Type }}"
+      name = "{{ info.Client.Name }}-{{ info.Client.Type }}-{{ info.Environment }}"
     }
   }
 }
@@ -25,21 +26,23 @@ variable "cidr_block" {
 variable "tags" {
   type = "map"
   default = {
-    Name = "{{ info.Client.Deployment.Name }}"
-    Project = "{{ info.Client.Project }}"
+    Name = "{{ info.Client.Name }}"
+    Project = "{{ info.Client.Name }}"
   }
 }
+
 variable "region" {
   default = "us-east-1"
 }
+
 variable "alb_target_name" {
   type = "string"
-  default = "{{ info.Client.Project }}-{{ info.Client.Deployment.Name }}-target-group"
+  default = "{{ info.Client.Name }}-{{ info.Environment }}-target-group"
 }
 
 variable "health_check_path" {
   type = "string"
-  default = "{{ info.Client.Deployment.HealthCheckPath }}"
+  default = "{{ info.Client.HealthCheckPath }}"
 }
 
 variable "repo_name" {
@@ -53,17 +56,18 @@ variable "repo_name" {
 
 // Provider Initialization
 provider "aws" {
-  region = var.region
-  access_key = "{{ info.Client.Deployment.AccessKey }}"
-  secret_key = "{{ info.Client.Deployment.SecretKey }}"
+	region                  = var.region
+  shared_credentials_file = pathexpand("~/.aws/credentials")
+  profile                 = "{{ info.Client.Profile}}"
 }
 
 # Fetch AZ in current Region
 data "aws_availability_zones" "available" {}
 
-data "aws_acm_certificate" "cert" {
-  domain = "*.shift.lftechnology.com"
-}
+// data "aws_acm_certificate" "cert" {
+//   domain = "*.shift.lftechnology.com"
+// }
+
 resource "aws_vpc" "main" {
   cidr_block = var.cidr_block
   tags = var.tags
@@ -144,8 +148,8 @@ resource "aws_route_table_association" "private" {
 // ALB
 # ALB Security Group: Edit this to restrict access to the application
 resource "aws_security_group" "lb" {
-  name = "{{ info.Client.Project|lower }}-{{ info.Client.Deployment.Name|lower }}-security-group"
-  description = "Security Group for {{ info.Client.Project }} {{ info.Client.Deployment.Name }}"
+  name = "{{ info.Client.Name|lower }}-{{ info.Environment|lower }}-security-group"
+  description = "Security Group for {{ info.Client.Name }} {{ info.Environment }}"
   vpc_id = aws_vpc.main.id
   ingress {
     protocol = "tcp"
@@ -174,7 +178,7 @@ resource "aws_security_group" "lb" {
 
 
 resource "aws_alb" "main" {
-  name = "{{ info.Client.Project|lower }}-{{ info.Client.Deployment.Name|lower }}-LB"
+  name = "{{ info.Client.Name|lower }}-{{ info.Environment|lower }}-LB"
   subnets = aws_subnet.public.*.id
   security_groups = [
     aws_security_group.lb.id]
@@ -204,9 +208,9 @@ resource "aws_alb_target_group" "app" {
 resource "aws_alb_listener" "my_website_https" {
  load_balancer_arn = aws_alb.main.id
  port = "443"
- protocol = "HTTPS"
- ssl_policy = "ELBSecurityPolicy-2016-08"
- certificate_arn = data.aws_acm_certificate.cert.arn
+ protocol = "HTTP"
+//  ssl_policy = "ELBSecurityPolicy-2016-08"
+//  certificate_arn = data.aws_acm_certificate.cert.arn
  //  tags        = var.tags
  default_action {
    type = "forward"
@@ -229,7 +233,7 @@ resource "aws_lb_listener" "my_website_http" {
 
     redirect {
       port        = "443"
-      protocol    = "HTTPS"
+      protocol    = "HTTP"
       status_code = "HTTP_301"
       host = "#{host}"
       path = "/#{path}"
@@ -241,21 +245,21 @@ resource "aws_lb_listener" "my_website_http" {
 
 variable "fargate_cluster_name" {
   type = "string"
-  default = "{{ info.Client.Project|lower }}-{{ info.Client.Deployment.Name|lower }}"
+  default = "{{ info.Client.Name|lower }}-{{ info.Environment|lower }}"
 }
 
 variable "fargate_container_port" {
   type = "string"
-  default = "{{ info.Client.Deployment.Port }}"
+  default = "{{ info.Client.Port }}"
 }
 
 variable "ecr_name" {
   type = "string"
-  default = "{{ info.Client.Project|lower }}/{{ info.Client.Deployment.Name|lower }}-backend"
+  default = "{{ info.Client.Name|lower }}/{{ info.Environment|lower }}-backend"
 }
 
 resource "aws_iam_role" "ECSAutoScalingRole" {
-  name = "ECSAutoScalingRole-{{ info.Client.Project|lower }}-{{ info.Client.Deployment.Type|lower }}"
+  name = "ECSAutoScalingRole-{{ info.Client.Name|lower }}-{{ info.Environment|lower }}"
 
   assume_role_policy = <<EOF
 {
@@ -274,7 +278,7 @@ EOF
 }
 
 resource "aws_iam_policy" "ECSAutoScalingPolicy" {
-  name        = "ECSAutoScalingPolicy-{{ info.Client.Project|lower }}-{{ info.Client.Deployment.Type|lower }}"
+  name        = "ECSAutoScalingPolicy-{{ info.Client.Name|lower }}-{{ info.Environment|lower }}"
   description = "ECSAutoScalingPolicy"
 
   policy = <<EOF
@@ -338,7 +342,7 @@ resource "aws_iam_role_policy_attachment" "attach-auto-scaling" {
 }
 
 resource "aws_iam_role" "ECSTasksExecutionRole" {
-  name = "ECSTasksExecutionRole-{{ info.Client.Project|lower }}-{{ info.Client.Deployment.Type|lower }}"
+  name = "ECSTasksExecutionRole-{{ info.Client.Name|lower }}-{{ info.Environment|lower }}"
 
   assume_role_policy = <<EOF
 {
@@ -358,7 +362,7 @@ EOF
 }
 
 resource "aws_iam_policy" "ECSTasksExecutionPolicy" {
-  name        = "ECSTasksExecutionPolicy-{{ info.Client.Project|lower }}-{{ info.Client.Deployment.Type|lower }}"
+  name        = "ECSTasksExecutionPolicy-{{ info.Client.Name|lower }}-{{ info.Environment|lower }}"
   description = "ECSTasksExecutionPolicy"
 
   policy = <<EOF
@@ -388,7 +392,7 @@ resource "aws_iam_role_policy_attachment" "attach-tasks-execution" {
 }
 
 variable "container_port" {
-  default = {{ info.Client.Deployment.Port }}
+  default = {{ info.Client.Port }}
 }
 
 data "template_file" "container_definition" {
@@ -432,6 +436,10 @@ output "backendServiceId" {
   value = module.fargate.fargate_service_id
 }
 
+output "service" {
+  value = var.fargate_cluster_name
+}
+
 output "backendClusterName" {
   value = var.fargate_cluster_name
 }
@@ -450,6 +458,7 @@ output "appUrl" {
 // Template
 `
 
+// ContainerTemplate defines the Terraform template required for running a fargate container.
 const ContainerTemplate = `[
     {
         "name": "${fargate_container_name}",

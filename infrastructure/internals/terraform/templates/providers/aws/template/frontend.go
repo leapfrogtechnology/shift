@@ -1,6 +1,6 @@
 package template
 
-// FrontendTemplate defined the Terraform template required for frontend infrastructure.
+// FrontendTemplate defines the Terraform template required for frontend infrastructure.
 const FrontendTemplate = `
 // Terraform State Backend Initialization
 terraform {
