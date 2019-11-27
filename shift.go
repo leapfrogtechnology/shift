@@ -10,7 +10,7 @@ import (
 func main() {
 	info := &cmd.Info{
 		Name:        "Shift",
-		Version:     "0.0.3",
+		Version:     "0.1.0",
 		Description: "CLI for Shift",
 	}
 
